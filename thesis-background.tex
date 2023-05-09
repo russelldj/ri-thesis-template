@@ -2,4 +2,33 @@
 
 \chapter{Background} \label{chapBackground}
 
-In the begining, there were no robots.
+\section{Different lenses on IPP}
+IPP can be conceptualized using insights or frameworks from many different fields...
+\begin{itemize}
+    \item Ergodic search
+    \item Adaptive sampling
+    \item Active learning 
+    \item Sensor placement
+    \item Target search and security games
+\end{itemize}
+
+\section{Current methods}
+\subsubsection{Online methods}
+\begin{itemize}
+    \item \textbf{Real robots} Alberto's Planetary \cite{Kodgule2019Non-myopicMeasurements}, Alberto's Coral \cite{Candela2021}, Yogi's Coral \cite{Jamieson2020ActiveEnvironments}, Marija's Multi-resolution \cite{Stache2021AdaptiveSegmentation}, Marija's framework one \cite{Popovic2020}
+\end{itemize}
+
+
+\subsubsection{Offline/batch methods}
+\begin{itemize}
+    \item \textbf{Ergodic} Ananya's sparse sensing \cite{RaoSparseOptimization}
+    \item \textbf{Generic} Sankalp's \cite{Arora2017RandomizedConstraints}, Daniela Rus' Correlated orienteering \cite{Yu2016CorrelatedTasks}
+    \item TIGRIS \cite{Moon2022}
+\end{itemize}
+
+\section{The gap which needs to be filled}
+\begin{itemize}
+    \item Batch planners don't take much contextual information such as satellite imagery 
+    \item Online planners are very complex to implement
+\end{itemize}
+

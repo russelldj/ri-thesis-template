@@ -73,7 +73,7 @@
   \centering
   \scalebox{.2}{
     \hyperlink{contents}{  % Link To TOC -- define label in main file.
-      \includegraphics{figs/cmu_seal.png}
+      \includegraphics{figs/cmu-seal-r.png}
   }}
 \end{figure}
 
@@ -94,7 +94,7 @@
 \begin{center}
     \em
     Submitted in partial fulfillment of the requirements \\
-    for the degree of Doctor of Philosophy in Robotics.
+    for the degree of Master of Science in Robotics.
 \end{center}
 
 \vfill
