@@ -1,35 +1,50 @@
 \chapter{Experiments} \label{chapExperiments}
 
-\section{Simulated experiments}
-\subsection{Classification data}
+\section{Data}
+\subsection{Drone data}
 \begin{itemize}
-    \item{Chesapeake land cover}
-    \item{Cuprite}
-    \item{Potsdam}
-    \item{Coral data}
+    \item Our data from Gascola and Portugal
+    \item OFO data for various sites out west 
 \end{itemize}
 
-\subsection{Regression data}
+\subsection{Satellite datasets}
 \begin{itemize}
-    \item{Thermal modeling (Marija)}
+    \item Chesapeake land cover 
 \end{itemize}
 
-\subsection{Prediction systems}
+\section{Semantic mapping}
 \begin{itemize}
-    \item Gaussian process 
-    \item Multilayer perceptron 
-    \item Rohan's work
+    \item This is where we collected the data
+    \item These are the sensors we used
+    \item This is the flight pattern we flew
+    \item What metrics do we use.
 \end{itemize}
 
-\subsection{Metric definitions}
-\subsubsection{Domain-specific examples}
-\subsubsection{Domain-agnostic}
+\section{Informative path planning}
 
-\subsection{Baseline implementations}
-Describe how implementations were massaged into the toolbox or reimplemented
+\subsection{Problem formulation}
+The goal of the experiments is to model a realistic data collection scenario. The data is collected over a series of missions, where each mission must be fully planned before it is executed. Each mission is allowed a pathlength budget and a number of samples it is allowed to collection. 
 
-\section{Field trials}
-\subsection{Gascola}
-\subsection{NJFS?}
-\subsection{Oporto?}
-\subsection{CFS?}
+In our experiments we use randomly-sampled NAIP tiles to evaluate the approach. In each situation the agent starts in the center of the environment and must return there after each mission.
+
+In these experiments we use a very simple prediction system to predict the class of unobserved pixels. It is simply a nearest-neighbor classifier which operates on the same PCA-compressed MOSAIKS features that are used for planning. While simple, this approach is well-suited to the extremely low number of training samples used in this setting and the standardized and uncorrelated nature of our feature space.
+
+Before any missions have been executed, the agent can only observe the label of the pixel it is at. Then it plans a mission and executes it, observing the labels at the chosen sampling locations. These samples are used to train a prediction model which is used for evaluation and, in theory, could be used to inform the plan for the next mission. 
+
+
+The experiments were conducted over ten random domains, which each represented an 800x800px crop from the Chesapeake Bay land cover dataset. Each tile represents approximately half a kilometer square. The pathlength was set as 800 pixels as well, which meant that the agent could go to one side of the environment and return to the start within the budget but some corners were completely unreachable. Each domain was explored using four missions where 10 samples could be collected during each one. Each sample meant the agent could observe the class of one pixel. After each mission, the class of all pixels  were predicted using the nearest neighbor classifier and the error metrics were computed. 
+
+
+\begin{itemize}
+    \item In some settings the remote sensing data was just downsampled from the highest resulotion 
+\end{itemize}
+
+\subsection{Baselines}
+\begin{itemize}
+    \item Geometrics planners, e.g. pizza or coverage 
+    \item Ergodic planner \cite{Rao}
+    \item Greedy baselines?
+\end{itemize}
+
+\subsection{Metrics}
+The quality of the predictions are evaluated on two metrics, accuracy and averaged recall. The first is simply the fraction of pixels in the map that were assigned the correct class label by the prediction system. The second represents the average of the per class recalls. This metric is chosen so that rare classes are treated equally in the evaluation procedure, since this is critically important when we explicitly want to find rare classes. We also report the time taken to generate the plan. Note that this does not include the time taken to generate the class predictions, since the planner is agnostic to the choice of prediction algorithm.

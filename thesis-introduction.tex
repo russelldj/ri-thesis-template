@@ -1,21 +1,54 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
 \chapter{Introduction} \label{secIntro}
-\section{Motivation}
-Drones are becoming increasingly useful in a variety of monitoring situations, from agriculture and forestry, to geology, to wildlife monitoring. In many contexts, the area of interest cannot be surveyed exhaustively due to constraints on imposed by flight speed and battery limitations. Therefore, many methods choose a subset of locations to visit which still allow the system to model the environment well, under a given metric. This problem goes by many names, including informative path planning (IPP), adaptive sampling, ergodic search, etc.
+Forests cover \todo{\%} percent of the planet are a a critical habitat for biodiversity, sink of carbon, and resource for human development. Understanding the properties of forests such as extent, tree density, height and species is critical for making management decisions. It is increasingly critical to have timely information in light of rapid changes due to climate change, invasive species, fire and direct human pressure.   
 
-\section{}
+Our understanding of forests is driven largely by data at two different spatial scales. The first is high resolution data from  field data, where ecologists or foresters conduct laborious measurements of small hand-selected plots and extrapolate their findings to broader areas. Unfortunately, this approach is time consuming, requires expert knowledge, and doesn't scale to the vast size of forests. The complementary paradigm is using data from satellites and crewed aircraft. This approach scales effectively, since data is available for a large region or even worldwide. The remote sensing community has developed models for a variety of attributes such as biomass, \todo,, many of which are calibrated with field reference data. Unfortunately, re-annalysis has shown many of the models produce highly inaccurate predictions. Furthermore, due to the low spatial resolution of satellite data, many tasks are fundementally challenging to accomplish.
+
+Over the past decade, there has been an increasing interest in small unmanned aerial systems, "sUAS" or "drones", for forestry applications. Drones carrying cameras have many desirable properties,
+ since they provide data with high spatial resolution, a relatively large spatial region, and are low cost, easy to deploy on demand. 
+ Many of these applications are still in early phases and there has been limited standardization. This is in contrast to agriculture where there has been substantial commercial development of end-to-end drone mapping solutions. The robotics community is beginning to show interest in forestry and several works have focused on applying drones. Howerver, this work relies heavily on sophisticated hardware, where multiple sensors are tightly integrated with on-board compute and controllers. This level of technical complexity puts these systems out of reach of most end-users, who lack specialized robotics knowledge.
+
+\todo{Add a section specifically about tree detection and segmentation}
+
+
+This work makes contributions to three topics that advance forest understanding using only commodity hardware. The first is semantic mapping, where we wish to classify different regions of the environment 
+for a specific task. This could related to broad classes such as distinguishing between trees, shrubs, grasses and bare earth or be more fine-grained, such as distinguishing between different tree species.
+This approach is generalized and only requires the user to label a small number of images to define their task. The second contribution is a study of tree detection using data from multiple scales.
+Specifically, we explore how best to accurately predict trees over a large region using remote sensing data, a small plot of field-referenced trees, and an overlapping drone survey. Finally, we propose a 
+generializable algorithm for planning where to execute a sparse set of drone surveys so that these observations can be accurately extrapolated to the whole region using satellite data.
+
+To address semantic mapping, we collect a new dataset using a multi-sensor platform. We compare two approaches, one which is online and uses all the sensors to another which only uses one camera and GPS but requires 
+offline batch processing. The former situation is representative of a robotics application where decisions must be made in real-time and significant complexity is acceptable. This later situation is representative of
+ a commodity drone survey, since these platforms possess these sensors and offline processing is sufficient for mapping.  We find that the offline method
+....hopefully produces maps with higher detail and more a more accurate semantic segmentation.
+
+For tree detection we use an aerial survey that covers the continental US to predict trees at scale. We compare three approaches that leverage DeepForest, an existing deep learning tree detection model
+developed for drone data. In the first setting, we directly apply the model to aerial data. In the second, we fine-tune the model using a small set of trees identified from a field reference survey. In 
+the third, we fine-tune the model for data collected from a drone survey and predict the trees in the remainder of the drone survey region. Then we georeference these predictions to the aerial data and use 
+the full set of predictions to fine-tune model for aerial data.
+ that wasn't manually measured, and then use this larger set of 
+predictions to fine-tune the model for aerial data. 
+
+
 %
-%\section{Metric uncertainty}
-%Despite the thorough treatment of uncertainty in the robotics community \cite{Thrun2002ProbabilisticRobotics}, it is commonly accepted that fundamental modeling assumptions are frequently violated \cite{SLAM course lectures}. This pattern is also repeated in the computer vision community, where uncertainty models are poorly calibrated \cite{something}. Often, these limitations are often ignored, because solutions work well enough in practice and it allows us to leverage powerful mathematical tools. This work argues that many situations require only 
+%\begin{itemize}
+%    \item We want to understand forest ecology
+%    \item We want to mitigate forest fires
+%    \item We want to understand carbon sequestration potential
+%\end{itemize}
 %
-%\section{Searching for high-value quantities }
 %
-%\section{How to use this template}
+%There has been an increasing interest in using small unmanned aerial vehicles, often termed "UAVs" or "drones" as a tool for conducting surveys. Drones possess many desireble properties 
 %
-%\subsection{Algorithms}
 %
-%\input{algorithms/alg-template.tex}
+%Understanding the current state of a forest is critical to informing management decisions, especially in the face of new pressures from climate change and invasive species. Forest ecology is labor-intensive and automation is only beginning. During our formulation of this problem, we met with Dr. Ben Weinstein, an ecologist at the University of Florida. He discussed how it’s challenging to build species classification models for trees using remote sensing data because of the severe class imbalance between rare and dominant species. In his current work, they use an iterative sampling approach, where they choose where to collect field measurements to maximize the likelihood of observing rare species. This planning is done by hand, but he was interested in an automated solution that may do better or reduce the human workload. This work seeks to develop an automated plan for where to obtain field measurements to train a remote sensing model. Specifically, we assume a multi-episode collection strategy where a batch of sampling locations are planned, the labels are collected, and a new ML model is fit which may inform the next sampling strategy. This work assumes that all the remote sensing data is available beforehand, and only the labels need to be collected. The remote sensing data may be from a high-altitude UAV or manned aircraft mission, or satellite data. The training labels could be collected by a human or potentially a low-altitude UAV equipped with special sensors, e.g. a hyperspectral imager or aerial laser scanner. 
 %
-%\section{Proposed experiments}
-%\subsection{Estimating bias maps}
+%This problem can be formulated as an instance of \textit{informative path planning}. Despite the significant work in this field, we are not aware of any techniques which explicitly tackle the problem of collecting training data for a satellite-based machine learning model. Furthermore, a common issue with informative path planning approaches is that they are carefully crafted for a specific domain and do not generalize easily to new settings. This is exacerbated by the lack of open implementations of the majority of these methods.
+%
+%AI will be applied at multiple levels of our approach. We will use an AI classification approach to predict the species of trees observed in our imagery. Our goal is not to develop novel classification methodologies which push the envelope of accuracy, but rather adapt existing techniques to try to make them sufficiently general for a variety of settings. In this context, we will simulate collecting training samples with our planning approach and then retrain the model only on these samples. 
+%
+%The other application of AI will be for developing our plan. This will rely more on classical learning-free methods. There are many different approaches for informative path planning which make different assumptions and have different tradeoffs. Some methods leverage greedy strategies \cite{Ruckin2022}, optimization \cite{ergodic}, or Monte-Carlo tree search \cite{Candela2021}.
+%
+%We will evaluate our approach on a species classification task using satellite or high-altitude aerial data as input. Our goal will be to collect training samples that allow us to generate good predictions on either the unobserved regions of the same site or different sites.
+

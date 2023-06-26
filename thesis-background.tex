@@ -2,8 +2,83 @@
 
 \chapter{Background} \label{chapBackground}
 
-\section{Different lenses on IPP}
-IPP can be conceptualized using insights or frameworks from many different fields...
+\section{Understanding forests}
+\begin{itemize}
+    \item Fuel classification
+    \item Species classification
+    \item Health/alive/dead
+    \item Biomass regression
+    \item Height/DBH estimation
+    
+Forests worldwide are increasingly under human management. People make decisions for a variety of reasons, ranging from timber management, wildlife conservation, forest fire mitigation, and carbon sequestration. These decisions should be informed by the current state of the forest. Examples include the type of dominant vegetation at a given location, or the location, height, diameter, health, or species of individual trees.
+In practice, management decisions are only made with limited imperfect estimates of these quantities. A common approach is that foresters conduct manual laborious surveys of a set of small hand-chosen plots and extrapolate these measurements to the unobserved regions. This is an extremely time-consuming process and is heavily reliant on choosing representative survey sites and using domain knowledge to accurately extrapolate to unseen regions.
+
+\end{itemize}
+
+\subsection{Using satellites and crewed aircraft for forest management}
+\begin{itemize}
+    \item Sat data has a broad extent and may be too low res
+    \item Reannalysis has shown that accuracy is often very low \todo{Find citation from the tropical one}
+    \item Data products from crewed aircraft has higher resolution but require substaintial investment and planning
+\end{itemize}
+
+\subsection{Drone surveys in forestry}
+\subsection{Ad hoc methods}
+\subsection{Automated surveys}
+\begin{itemize}
+    \item OFO work \cite{Young2022OptimizingForests} 
+\end{itemize}
+
+\section{Multi-sensor online localization and mapping}
+\subsection{General approaches}
+\subsection{Approaches for drones}
+\subsection{Approaches for forestry}
+
+\section{Photogrametry}
+
+\section{Semantic mapping}
+\subsection{Semantic segmentation}
+
+\begin{itemize}
+    \item Kimera \cite{Rosinol2020}
+    \item Our semantic mapping \cite{RussellUnmannedMitigation}
+\end{itemize}
+
+\section{Informative path planning}
+
+In many forestry applications, the region of interest is commonly substantially larger than what is feasible to survey, either by hand or even with a drone. In practice, foresters  select a small set of plots to visit and extrapolate from these sparse observations to the entire region. These plots are chosen using expert knowledge of the region to be diverse and representative.
+
+Despite the ability of drones to cover much large regions than humans alone, they still fall short of the ability to perform  exhaustive coverage. For example, rough calculations suggest that it would take a drone pilot 250 full days flying to survey the TODO region. Therefore, it is clear that judicious use of limited resources is critical.
+
+Satellite or aerial data is the primary modality of data that scales to the extent required for understanding forests at scale. Unfortunately, prior work has shown that many existing satellite prediction models are highly inaccurate \cite{}. Furthermore, useful global models exist only for select satellite data product and for common tasks like biomass estimation. Therefore, they are not applicable when improved satellites are launched or if a regional satellite or aerial campaign is conducted.
+It is possible to tackle fine-grained tasks such as species classification with satellite data, but they are often only relevant to a small region \cite{Sweden}. 
+Therefore, we wish to streamline the process of developing satellite prediction models by using a generic framework and fitting it to local observations.
+
+Specifically, we assume that our drone collects data that can be accurately interpreted to predict the quantity of interest. For example, we can task a human annotator with identifying tree species from high-resolution drone images, or train a deep learning model to do the same. We further assume that information relavent to this task is contained in remote sensing data of the scene, but it's not easy or scalable to label this data directly. This may be because a human labeller does not possess the intuition to label species based solely on low-resolution satellite data. This claim is especially relevant if the remote sensing data contains channels other than Red-Green-Blue, as it is hard for humans to fully interpret this data \cite{Hard to label multispectral}.
+
+Given these assumptions, the goal is to choose a set of sample locations to observe with the drone. From these observations, we obtain a classification label for each observed pixel in the remote sensing data. We then train a satellite prediction system using these observed pixels as the ground truth training examples. The goal of this work is to observe regions which serve as useful training samples for this satellite prediction system. This is similar to the ideas of active learning \cite{Active learning}, where a repository of unlabeled data is available and an algorithm can query an oracle for labels of a subset of samples. However, active learning is not directly applicable to our domain since in classical formulations, any combination of samples can be selected. In this work, the samples relate to spatial regions that must be visited by a drone. Therefore, it must be possible to visit all the requested samples subject to operational constraints such as the drone's battery life.
+
+This problem is most closely related to prior work in informative path planning (IPP). This diverse field is concerned with how and were to sample observations to gain some understanding of a phenomena of interest. Because of the wide variety of operational constraints, objectives, and sensing modalities, it is challenging to directly compare IPP approaches or niavely apply them to a new task. 
+
+
+
+
+\begin{table}[]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+ & \makecell{Sparse \\ Ergodic \\ Sensing} & \makecell{Optimization-\\based \\ replanning} & TIGRIS & \makecell{MCTS on \\ GPs} & Proposed \\ \hline
+\makecell{Considers \\ non-spatial \\ features} & X & X & X & Y & Y \\ \hline
+\makecell{Long horizon} & Y & X & Y & Y & Y \\ \hline
+\makecell{Fast and \\ scalable} & Y & Y & Y & X & Y \\ \hline
+\makecell{Reasons \\ about area \\ measurements} & X & Y & Y & Y & Y \\ \hline
+\makecell{Incorporates \\ non-trivial \\ dynamics} & Y & Y & Y & N & N \\ \hline
+\end{tabular}%
+}
+\caption{A comparison}
+\label{tab:my-table}
+\end{table}
+
 \begin{itemize}
     \item Ergodic search
     \item Adaptive sampling
@@ -12,24 +87,24 @@ IPP can be conceptualized using insights or frameworks from many different field
     \item Target search and security games
 \end{itemize}
 
-\section{Current methods}
-\subsubsection{Online methods}
+\subsection{Online methods}
 \begin{itemize}
     \item \textbf{Real robots} Alberto's Planetary \cite{Kodgule2019Non-myopicMeasurements}, Alberto's Coral \cite{Candela2021}, Yogi's Coral \cite{Jamieson2020ActiveEnvironments}, Marija's Multi-resolution \cite{Stache2021AdaptiveSegmentation}, Marija's framework one \cite{Popovic2020}
 \end{itemize}
 
 
-\subsubsection{Offline/batch methods}
+\subsection{Offline/batch methods}
 \begin{itemize}
-    \item \textbf{Ergodic} Ananya's sparse sensing \cite{RaoSparseOptimization}
+    \item \textbf{Ergodic} Ananya's sparse sensing \cite{Rao}
     \item \textbf{Generic} Sankalp's \cite{Arora2017RandomizedConstraints}, Daniela Rus' Correlated orienteering \cite{Yu2016CorrelatedTasks}
-    \item \textbf{TIGRIS} \cite{Moon2022}
+    \item \textbf{TIGRIS} \cite{Moon2022TIGRIS:Planning}
     In this work the authors use a sampling based approach. The chance of taking a sample is biased toward those locations which have higher information content. Importantly, this work takes into account the s
 \end{itemize}
 
-\section{The gap which needs to be filled}
-\begin{itemize}
-    \item Batch planners don't take much contextual information such as satellite imagery 
-    \item Online planners are very complex to implement
-\end{itemize}
+The goals of this work are closely related to that of \cite{Ruckin2022}, which seeks to use a drone to collect good training data for a land-cover classification approach. This approach assumes that no prior information has been collected about the environment is known and that images must be collected for hand-annotation. However, in this case, we assume that we have access to remote sensing data ahead of time and simply need to determine where to collect the boots-on-the-ground \textit{in-situ} measurements of the target quantity. In this work, our target quantity is either species classification or AGB regression. As discussed in the ReforesTree paper \cite{reforestree}, these quantities cannot be labeled by hand directly from the imagery data and instead require in-situ measurement. 
+
+Due to the assumption of prior imagery, we may leverage approaches from \cite{Candela2021}, which uses an MCTS planner to explore a world for which prior satellite data exists. This work uses a Gaussian Process to model a quantity of interest. It is challenging to directly apply this work because it assumes that each pixel can be regressed individually by the Gaussian Process. This assumption is unlikely to be correct for high spatial and low spectral resolution data since texture within a local neighborhood will likely need to be considered.
+
+Ergodic planning, specifically sparse-sensing ergodic planning \cite{ergodic}, provides a framework to plan samples over an \textit{information map} which describes how likely each sample is to be valuable. We could derive this information map from the current model prediction in multiple ways. For example, we could specify that samples predicted as rare classes or extreme AGB values are more interesting. Or we could estimate model uncertainty using ensembles or monte-carlo dropout. However, this approach only considers a per-sample interestingness and spatial diversity of samples. In this case, diversity of appearance may matter more than diversity of location. 
+
 
