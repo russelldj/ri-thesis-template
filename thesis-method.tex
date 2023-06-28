@@ -75,8 +75,8 @@ In the image domain, we use a segmentation network based on a transformer archit
     
 \begin{figure}
     \centering
-    \includegraphics{example-image-a}
-    \caption{Example manual annotations}
+    \includegraphics[width=\textwidth]{figs/methods/semantic_mapping/viame_example.png}
+    \caption{Example manual annotations using the VIAME toolkit, a free and open source web annotator with potential support for integrated model training.}
     \label{fig:methods:manual-annotations}
 \end{figure}
 
@@ -86,6 +86,14 @@ In the image domain, we use a segmentation network based on a transformer archit
     \item Talk about calibrating all the sensors
     \item Talk about the method
 \end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figs/methods/semantic_mapping/semantic_mapping_overview.pdf}
+    \caption{An overview of the LiDAR-camera semantic mapping system}
+    \label{fig:lidar-camera-semantic-mapping}
+\end{figure}
+
 The goal of semantic SLAM is to fuse the semantic observations from different observations into a global map that captures both the shape and semantics. To accomplish this task, we used a loosely coupled approach to fuse the semantic segmentation (at image level), the LiDAR readings, and the drone odometry given by the SLAM system. We call it a loose coupling as there is no feedback from the semantic mapping into the SLAM pipeline.
 
  
@@ -135,9 +143,15 @@ The goal of informative path planning is collect a set of measurements with a pl
 \begin{itemize}
     \item Many works try to minimize the entropy of a Gaussian Proccess. This tool is especially nice because GPs can generate uncertainty predictions by only observing the features of a set of samples and not the labels.
 \end{itemize}
-\subsection{Sampling-based semi-greedy path planning}
+\subsection{Remote-sensing Aware Planning Through Observation Randomized Sampling (RAPTORS)
+}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figs/methods/IPP/RAPTORS_concept.pdf}
+    \caption{RAPTORS overview}
+    \label{fig:methods:IPP_raptors_overview}
+\end{figure}
+
 \begin{itemize}
     \item We employ a sampling-based strategy to build a long horizon offline path. This takes in an initial location, a number of samples, and a traversal budget. The algorithm begins by computing the gaussian process uncertainty after only observing the first location. Then, a feasible region is computed using a fraction of the remaining budget. A fixed number of samples are drawn from this feasible region, using a weighted sampling based on their uncertainty. The sample which reduces the total map unceratinty the most is added to the plan. Then the points are ordered using a TSP solver. The feasible region is recomputed using the added points and the fraction of the remaining budget.
 \end{itemize}
-\subsection{Survey-based planning}
-TODO. Think explicitly about camera frustums

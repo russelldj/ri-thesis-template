@@ -1,19 +1,21 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
-\chapter{Background} \label{chapBackground}
+\chapter{Related Work} \label{chapBackground}
 
-\section{Understanding forests}
-\begin{itemize}
-    \item Fuel classification
-    \item Species classification
-    \item Health/alive/dead
-    \item Biomass regression
-    \item Height/DBH estimation
+\section{Collecting Data for Forest management}
+%\begin{itemize}
+%    \item Fuel classification
+%    \item Species classification
+%    \item Health/alive/dead
+%    \item Biomass regression
+%    \item Height/DBH estimation
     
-Forests worldwide are increasingly under human management. People make decisions for a variety of reasons, ranging from timber management, wildlife conservation, forest fire mitigation, and carbon sequestration. These decisions should be informed by the current state of the forest. Examples include the type of dominant vegetation at a given location, or the location, height, diameter, health, or species of individual trees.
-In practice, management decisions are only made with limited imperfect estimates of these quantities. A common approach is that foresters conduct manual laborious surveys of a set of small hand-chosen plots and extrapolate these measurements to the unobserved regions. This is an extremely time-consuming process and is heavily reliant on choosing representative survey sites and using domain knowledge to accurately extrapolate to unseen regions.
+Forests worldwide are increasingly under human management. People make decisions for a variety of reasons, ranging from timber growth, wildlife conservation, forest fire mitigation, and carbon sequestration. These decisions should be informed by the current state of the forest. Examples include the type of dominant vegetation at a given location, or the location, height, diameter, health, or species of individual trees.
 
-\end{itemize}
+In practice, management decisions are only made with limited imperfect estimates of these quantities. A common approach is that foresters conduct manual laborious surveys of a set of small hand-chosen plots and extrapolate these measurements to the unobserved regions. This is an extremely time-consuming process and is heavily reliant on choosing representative survey sites and using domain knowledge to accurately extrapolate to unseen regions. \todo{Talk about the scale of these measurements and how long it takes.} \todo{Talk about how these sites are chosen}. Despite the limitations, this data often represents the richest and most detailed understanding of a region.
+
+Another approach for understanding forests using remote sensing data captured from satellites or crewed aircraft.f
+\subsection{Manual forestery cruises}
 
 \subsection{Using satellites and crewed aircraft for forest management}
 \begin{itemize}
@@ -23,28 +25,32 @@ In practice, management decisions are only made with limited imperfect estimates
 \end{itemize}
 
 \subsection{Drone surveys in forestry}
-\subsection{Ad hoc methods}
-\subsection{Automated surveys}
 \begin{itemize}
     \item OFO work \cite{Young2022OptimizingForests} 
 \end{itemize}
 
-\section{Multi-sensor online localization and mapping}
-\subsection{General approaches}
-\subsection{Approaches for drones}
-\subsection{Approaches for forestry}
+\section{Automated methods for understanding forest structure}
+\subsection{Surveying methods}
+TLS
+\subsection{SLAM}
+\subsection{Photogrametry}
 
-\section{Photogrametry}
 
-\section{Semantic mapping}
+\section{Automated methods for understanding attributes of forests}
 \subsection{Semantic segmentation}
+\subsection{Semantic mapping}
 
 \begin{itemize}
+    \item UFO map
     \item Kimera \cite{Rosinol2020}
     \item Our semantic mapping \cite{RussellUnmannedMitigation}
 \end{itemize}
 
-\section{Informative path planning}
+\section{Detecting trees in top-down imagery}
+\cite{Weinstein2020DeepForest:Delineation}
+
+
+\section{Planning informative drone surveys}
 
 In many forestry applications, the region of interest is commonly substantially larger than what is feasible to survey, either by hand or even with a drone. In practice, foresters  select a small set of plots to visit and extrapolate from these sparse observations to the entire region. These plots are chosen using expert knowledge of the region to be diverse and representative.
 
