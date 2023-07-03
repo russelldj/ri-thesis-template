@@ -1,5 +1,6 @@
 \chapter{Methods} \label{chapMethod}
 \section{Datasets}
+There is a lack of high-quality, organized, and consistent forestry data available for computer vision and robotics research. Therefore, a primary objective of this work was to collect high-quality datasets. In our early work, we focused primarily on collecting data from multiple sensors at once, so we could explore modern robotics approaches. In later work, we collected data from commodity drones that only capture geo-tagged images. This data is much easier to work with, but lacks the same richness as multi-sensor data.
 
 \subsection{Commodity drone data}
 Commodity drone data refers to data which can be acquired with only commercially-available tools and no specialized domain knowledge. In practice, a valuable and easy-to-collect source of data is GPS-tagged images collected in a pre-defined exhaustive survey. This can be obtained by even some of the smallest drones, such as DJI Mavic, which costs approximately \$1,600\footnote{\href{https://store.dji.com/product/dji-mavic-3-classic}{DJI Mavic}}. Commercial flight planners are a tool that allows a user to quickly define a survey region and fly over it in a geometric pattern. A common option is "lawnmower coverage" where a drone flies in a straight line, shifts over, and flies back the opposite direction. Another option is "grid coverage" where a lawnmower pattern is executed twice, in perpendicular directions. An important consideration when executing these surveys is the drone altitude, which represents a trade-off between coverage ability and spatial resolution. While drones can in theory fly to a substantial altitude, they are restricted in the US to 400ft and below due to concerns about interfering with crewed aircraft. The final consideration is front- and side-overlap. Front overlap refers to the fraction of the image which is observed in two consecutive frames captured as the drone is flying forward. The side overlap refers to how much overlap there is between neighboring flight lines.
@@ -29,17 +30,17 @@ In the over canopy setting, we used a commercial flight planner. This allowed us
 \centering
 \begin{tabular}{|l|l|l|l|l|}
 \hline
-\textbf{Name} & \textbf{Location} & \textbf{Platform} & \textbf{Environment} & \textbf{\makecell{Flight Pattern\\(camera angle \\from horizontal)}}\\
+\textbf{Name} & \textbf{Location} & \textbf{Platform} & \textbf{Environment} & \textbf{\makecell{Flight Pattern\\(camera degrees \\from horizontal)}}\\
 \hline
-Coimbra & \makecell{Coimbra,\\ Portugal} & \makecell{Matrice 600 \\with custom payload} & \makecell{Forest path} & \makecell{Manual out \\and back (30)} \\ 
+Coimbra & \makecell{Coimbra,\\ Portugal} & \makecell{Multi-sensor \\ payload} & \makecell{Forest path} & \makecell{Manual out \\and back (30)} \\ 
 \hline
-Oporto & \makecell{Oporto,\\ Portugal} & \makecell{Matrice 600 \\with custom payload} & \makecell{Forest clearing\\ with grass} & \makecell{Manual observations\\ of the boundary (30)}\\
+Oporto & \makecell{Oporto,\\ Portugal} & \makecell{Multi-sensor \\payload} & \makecell{Forest clearing\\ with grass} & \makecell{Manual observations\\ of the boundary (30)}\\
 \hline
-Gascola & \makecell{Pittsburgh,\\ PA USA} & \makecell{Freefly with \\custom payload} & \makecell{Trees, shrubs,\\ and grasses} & \makecell{Lawnmower \\ over canopy\\ (75)} \\
+Gascola & \makecell{Pittsburgh,\\ PA USA} & \makecell{Multi-sensor \\ payload}  & \makecell{Trees, shrubs,\\ and grasses} & \makecell{Lawnmower \\ over canopy\\ (75)} \\
 \hline
-Wharton & \makecell{Hammonton,\\ NJ USA} & \makecell{Matrice 600 with \\custom payload} & \makecell{Forest with road} & \makecell{Manual oval \\ over canopy\\ (60)} \\
+Wharton & \makecell{Hammonton,\\ NJ USA} & \makecell{Multi-sensor \\ payload}  & \makecell{Forest with road} & \makecell{Manual oval \\ over canopy\\ (60)} \\
 \hline
-Stowe & \makecell{Stowe,\\ VT USA} & \makecell{DJI Air 2s} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
+Stowe\{1,2\} & \makecell{Stowe,\\ VT USA} & \makecell{DJI Air 2s} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
 \hline
 Emerald \cite{Young2022} & \makecell{Lake Tahoe,\\ CA USA} & \makecell{DJI Mavic 2} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
 \hline
@@ -47,8 +48,13 @@ Emerald \cite{Young2022} & \makecell{Lake Tahoe,\\ CA USA} & \makecell{DJI Mavic
 \caption{A summary of drone datasets used in this work.}
 \end{table}
 
+\subsection{Non-drone Forestry Data}
+We also used two existing sources of forestry data that were relavent to our domain. The first was a dataset of 121 images of a Portugese forest taken from a ground vehicle in the work of Andrada et. al. \cite{Andrada2020}. These images were manually labeled with six classes: Background, Live flammable material (aka Fuel), Canopies, Trunks, Humans, and Animal The original paper uses multi-spectral data but we just used the co-registred RGB data that was also releasted. This choice allowed us to deploy the model on a normal camera, rather than requiring a multi-spectral one. We refer to this dataset as \textit{Sete Fontes} because it was collected in a region with that name.
+
+We also used a synthetic dataset rendered from a proceedurally-generated Portuguese forest \cite{nunes2021procedural}. In this work, the authors proceedurally-created a forested landscape by first creating the terain, the placing paths and rocks, and finally adding vegitation. Then they rendred images from this mesh. At the same time, they also a semantic image, that perfectly captured which class was observed at each pixel. These classes were slightly more-granular than those used in \cite{Andrada2020}, but they could easily be aggregated to match these. The exception was there were no examples of humnas or animals in this simulated dataset, but these were also rare in the Sete Fontes dataset and were not critical to this work. The synthetic dataset consisted of 3154 rendered images and associated sematic segmentation groundtruths taken at intervals from a simulated ground vehicle trajectory. 
+
 \subsection{Optical remote sensing data}
-Optical remote sensing data is captured by sensors onboard satellites or airplanes. This class of data is extremely powerful because it enables understanding at planetary scales, often with no or low cost to the data consumer. Remote sensing data can take many forms such as LiDAR, synthetic aperture radar (SAR), and optical. In this work, we focus on optical data, since it is conceptually most similar to what we capture from drones. This data is collected by an electro-optical sensor which takes images of the earth. Then, the images are registered together and referenced into absolute geospatial coordinates. This process relies on the estimated pose of the platform when the image was taken, the height of the ground, and manual corrections. From there, an orthographic render is generated. This is a projection of the data into a top-down view, which is commonly aligned with the axes of geospatial coordinate system used to define the location. Many satellite data sources capture bands outside of the visible wavelength. Sensors which capture a x to y number of bands are termed multi-spectral and sensors which captured y to z bands are termed hyper-spectral. In this work, we focus primarily on data collected by the National Aerial Imagery Program (NAIP) multi-spectral data source which contains red, blue, green and near-infrared bands. This data is collected at an interval of at most every three years over the continental US. It is obtained using aircraft, which are generally contracted specifically for this purpose. The resolution per pixel is 0.6 meters, which means that it is relatively high for a free data product with a significant extent.
+In this work, we focus primarily on data collected by the National Aerial Imagery Program (NAIP) multi-spectral data source which contains red, blue, green and near-infrared bands. This data is collected at an interval of at most every three years over the continental US. The USDA contracts with states to obtain this data from manned aerial surveys. The data is post-processed to provide an ortho-rectified, stitched, and georefernced product analogous to satellite imagery. The resolution per pixel is 0.6 meters, which is relatively high for a free data product with a significant extent. An example image can be seen in Figure \ref{fig:methods:NAIP_example}.
 
 \begin{figure}
     \centering
@@ -57,30 +63,82 @@ Optical remote sensing data is captured by sensors onboard satellites or airplan
     \label{fig:methods:NAIP_example}
 \end{figure}
 
+\begin{table}[]
+\centering
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Name} & \textbf{Location} & \textbf{Type} & \textbf{Environment} \\
+\hline
+Sete Fonte & \makecell{Coimbra,\\ Portugal} & \makecell{Under-canopy \\ images} & \makecell{Forest} \\ 
+\hline
+Synthetic \cite{nunes2021procedural} & \makecell{N/A, simulated} & \makecell{Under-canopy \\ images} & \makecell{Forest} \\ 
+\hline
+NAIP & \makecell{Continental US} & \makecell{Aerial imagery} & \makecell{Varied} \\ 
+\hline
+\end{tabular}
+\caption{A summary of non-drone datasets used in this work}
+\end{table}
 
+\subsection{Data management}
+A practical consideration when dealing with this much data is how to effectively store, version, organize, and share it in a seamless fashion, especially when working in collaborative teams. The tool used for managing the complexities of software development, such as `git`, have similar goals but do not support managing large, non-text files. 
+Cloud hosting and local harddrives inenvitably become challenging to organize and do not natively support a versioning system, which makes them susceptible to accidental errors or duplicated data. 
+In this work, we leveraged a software tool called Data Version Control (DVC), which is designed for organizing data in large projects such as machine learning and data science. DVC acts as a management layer between a git-tracked project and an arbitrary remote storage device. Effectively, DVC creates light plaintext files which describe the real data. These a small files can be tracked by `git` and represent a full history of the project.  
 
+We created a `git` repo and associated `DVC` datastore for each project we worked on that had a different goal. Our organizational strategy evolved over time, but at the end involved two main concepts: a standardized hierarchy to organize the different data collects and a level designation to sort data based on the level of processing. The organizational structure was as follows `site\_name -> YYYY\_MM\_DD -> collect\_NNN` A site name represented one location where we collected data. This was chosen as the top-level organizational structure because data from the same site is most commonly used together. The next level represented the date and the final level broke the data up into logical segments. In general this corresponded to one drone flight, but in rare instances represented multiple flights where we left the sensors logging continuously, or data collected solely on the ground for calibration purposes. The level designation was inspired by the satellite community, where different levels denote different steps of sequential post-processing. In our work, we used Level0 to represent raw data, as copied from the platform. Level1 represented data processed into a standarized format. This was less important for commodity drone data, since it was frquently already captured as folders of geotagged images. However, it was very important for extracting easy-to-use information from rosbags, which is how our multi-sensor custom data was stored. Level2 represnted processed results such as structure from motion and semantic predictions. In initial work, we nested all the levels within a collect. However, we later found that for our usecases it was easier to have levels be the top level organizational structure. This allowed us to quickly check for all datasets matching a specific level of processing. The final organaiztional structure was as follows:
 
+% TODO fix this up
+
+\begin{verbatim}
+    
+├── level_00
+│   ├── README.md
+│   ├── <site_name_x> # A different folder for each geographic location
+│   │   └── <date_YYYY_MM_DD> # A different folder for each day at that site
+│   |       ├── collect_<NNN> # A different folder for each collect, which is probably synonmous with a flight
+│   │       └── collect_<NNN>
+│   └── <site_name_y>
+│       └── 2023_06_15
+│           ├── collect_<NNN>
+│           └── collect_<NNN>
+├── level_01 
+│   ├── README.md
+│   └── per_collect # Data in easy-to-use format, structured like level_00
+│       └── README.md
+└── level_02
+    ├── README.md
+    └── photogrametry # Photogramtery results
+        ├── README.md
+        └── metashape # Could have multiple softwares
+            └── per_collect # Structured like level_00
+\end{verbatim}
 
 \section{Geometric understanding of forests using drone data}
 \subsection{Photogrametry}
-\begin{itemize}
-    \item TODO We used Agisoft  
-    \item TODO The images are initialized with the GPS coordinates
-\end{itemize}
+Data from commodity drones is very easy to use with structure from motion, since it is often provided as folder of images, with GPS information embedded in the EXIF metadata. This GPS information is not require, but provides a very helpful initialization to the structure from motion process. Furthermore, commodity drones are often set to only capture data at a low frequency or after traveling a given distance, to manage limited storage. Therefore, it is often advantageous to use all the available images. However, with our custom payload, the data was captured at a high frequncy of 10 HZ so consecutive images were often highly redundant. As shown by Young et. al. \cite{Young2022}, highly redundant images contribute little to the overall quality but we found them to dramatically increase computation times. Therefore, we the drone we downampled the image to 2HZ. If we had GPS data available, we tagged each image with the GPS coordinate from the temporally-nearest GPS record.   
+
+After preliminary experiments, we found that a commercial software, Agisoft Metashape consistently produced high-quality results. We used the parameters found to work well by by Young et. al. \cite{Young2022}. In this study, the authors do not provide recommended parameters for the meshing step because this representation is not used in their pipeleine. Therefore, we used the default Metashape settings, which include "high" quality and "high" number of faces. In settings where we needed ortho-mosaics, or top-down renders, we also used the default settings. We conducted our experiments on high-end cloud infrastructure from the NSF Jetstream \cite{} program. 
+
+
 
 \subsection{SLAM}    
-Since SLAM is not the focus of this work, we choose to use results from our collaborators on these datasets. They tuned LIO-SAM\cite{Shan2020LIO-SAM:Mapping} to work well in this environment.
-\begin{itemize}
-    \item TODO expand 
-\end{itemize}
+Since SLAM is not the focus of this work, we choose to use results from our collaborators on these datasets. We use two methods from their experiments, LIO-SAM \cite{Shan2020LIO-SAM:Mapping} with the parameters tuned for the forestry domain and a custom SLAM that combines components of both LIO-SAM and VIL-SLAM \cite{Shao2019StereoMapping} to make an approach that combines information from both LiDAR and stereo vision in a tightly-coupled manner. A through description of this system can be found in \cite{RussellUnmannedMitigation}.
 
 
-\section{Semantic mapping for forests}
-\subsection{Semantic segmentation}
-In the image domain, we use a segmentation network based on a transformer architecture called SegFormer \cite{Xie2021}. Given the relatively low amount of real-world images in our training dataset, this network was especially suitable since it showed strong performance on benchmark datasets and good generalization capabilities. We trained this model using the default parameters used in the MMSegmentation \cite{MMSegmentation} implementation. 
+\section{Semantic Mapping of Forests}
+The goal of our semantic mapping experiments was to determine what type of vegitation was where in the environment. We had a specific focus on accurately localizing fuel so that an automous ground robot could remove it. To accomplish this, we needed to both provide an accurate map of the world and add additional information to this map about what type of object was at each location.
 
-We only labeled data coarsely because it was shown to be effective in \cite{Davila2022ADAPT:AI}. We used the VIAME toolkit 
-    
+Semantic mapping can be done with a variety of modalities. A relevant work on semantic mapping for forestry \cite{Chen2020SLOAM:Inventory}, focuses solely on detecting tree trunks within the environment. Because of the distinctive geometry of trunks, they are able to detect them in LiDAR. Because we want to distinguish classes that may have similar geometry, we choose to predict semantics using images, as done in the work of Andrada et. al. \cite{Andrada2020} in the ground vehicle setting. Using images has the added benefit that it is easy for humans to label annotated data to train the approach and to evaluate the quality of the predictions. Moreover, there is a wide range of semantic segmentation models available that are conceptually interchangeable. 
+
+\subsection{Semantic Segmentation}
+To the best of our knowledge, there are no pre-trained models that are useful for our task and publically available. Therefore, we needed to train our own models. We conducted two experiments, one on Portuguese data and another on the \textit{Gascola} we collected in the US. 
+
+In the gascola experiemnts, our objective was to segment the different classes from overhead imagery. Since there weren't any relavent datasets, we chose to label a small ammount of data on our own for training. In semantic segmentation, it is very time consuming to label the boundaries between each class precisely. This is especially true for natural environments, where different classes are often interlaced at the boundary, such as tree branches over the ground or bare earth transitioning to grass. A relevant work on segmenting ground cover with drones is Davila et. al. \cite{Davila2022ADAPT:AI}, where they showed the coarsely labeling regions away from class boundaries was much faster and the model trained on these coarse annotaions still made good predictions at the boundaries. We conducted annotations using the VIAME toolkit, a free and open source web annotator pictured in Figure \ref{fig:methods:manual-annotations}. Even though our primary goal was to only distinguishes broad classes, we chose to annotate a more granular set of classes loosely inspired by the Anderson13 classes \cite{anderson1981aids}, a vegetation classification system commonly-used in fire modeling. Our reasoning was that this allowed us more flexibility when it came to future experiments, where we might want to aggregate the clsases differently. Furthemore, it gave us the option to train on these classes and aggreate them after prediction. In practice, we found that this additional granularity did not increase the labeling burden significantly, since we rarely had to break up spatial regions that would have originally been considered one coarse class. Rather, we mostly labeled entire regions with more granualar designations. 
+To evaluate the performance of the model, we used another small annotated dataset from another flight over the same region. We summarized the IoU, precision, and recall for each class.
+
+We use a segmentation network based on a transformer architecture called SegFormer \cite{Xie2021}. Given the relatively low amount of real-world images in our training dataset, this network was especially suitable since it showed strong performance on benchmark datasets and good generalization capabilities. We trained this model using the default parameters used in the MMSegmentation \cite{mmseg2020} implementation. 
+
+Given the limited availability of real data and the labor-intensive nature of labeling to obtain ground truth, we explored the utility of models trained with simulated (\textit{synthetic}) data. We conducted three types of experiments: models trained solely with \textit{synthetic} data, models trained with real data (\textit{Setes Fontes}), and a mixture of both. For the last two cases, we trained with an increasing number of real images to evaluate the performance of the model with minimal real images. Thus, we conducted training experiments using (or adding) 7, 15, 21, 30, 60, 91, and 121 data points from the \textit{Setes Fontes} dataset. We trained for 10000 iterations and evaluated each model in 30 \textit{Setes Fontes} images not seen in the largest training split are used for evaluation and we replicate this experiment over five folds of the data. The three models are a fine-tuned implementation as the base networks were first trained with the \textit{CityScapes} dataset \cite{Cordts2016}.
+
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figs/methods/semantic_mapping/viame_example.png}
@@ -88,8 +146,7 @@ We only labeled data coarsely because it was shown to be effective in \cite{Davi
     \label{fig:methods:manual-annotations}
 \end{figure}
 
-
-\subsection{LiDAR camera work}
+\subsection{Semantic Mapping with a Camera and LiDAR}
 
 \begin{figure}
     \centering
@@ -118,16 +175,24 @@ We use an octomap \cite{hornung13auro} representation to efficiently discretize 
 %\end{itemize}
 
 \section{Tree detection in top-down data}
-The goal of this work is to study tree detection at multiple scales, given a realistic set of operational constraints. Specifically, we assume that we have easy access to aerial or satellite data covering a broad region. This data is assumed to be at the lowest spatial resolution. Within this region, we have a drone survey which covers a smaller spatial extent but is at a higher resolution. Finally, we have an even smaller region where we know the location and extent of every tree. This could either be from field reference data or manual annotation of the drone orthomosaic. Our goal is to accurately detect the trees in the entire region of interest that's covered by the satellite data. 
+The goal of this work is to study tree detection at multiple scales, given a realistic set of operational constraints. Specifically, we assume that we have easy access to aerial or satellite data covering a broad region. This data is assumed to be at the lowest spatial resolution. Within this region, we have a drone survey which covers a smaller spatial extent but is at a higher resolution. Finally, we have an even smaller region where we know the location and extent of every tree. This could either be from field reference data or manual annotation of the drone data. An example of hte scale of the different types of data can be seen in Figure~\ref{fig:methods:multi_scale_tree_det}. Our goal is to accurately detect the trees in the entire region of interest that's covered by the satellite data. 
 
 \begin{figure}
     \centering
     \includegraphics[width=0.7\textwidth, trim={6cm 0cm 5cm 1cm},clip]{figs/methods/tree_detection/multi_scale_data.pdf}
     \caption{Multiple scales of tree detection data}
-    \label{fig:enter-label}
+    \label{fig:methods:multi_scale_tree_det}
 \end{figure}
+The first step in this experiment was processing the drone images into an orthomosaic, as described in the Photogrametry section. The orthomosiac was roughly geospatially regestered from the GPS readings where each image was taken. However, we noticed a translational error of several meters when the orthomosaic was overlaid on the NAIP data. Fixed translatinoal offsets are a common error with consumer GPS, though scale and rotation are often much more accurate. We fix this issue manually using an overlay in QGis to estimate the translational offset, and then updating the metadata using `gdalwarp`  
 
-In this section, we explore tree detection based solely on GPS-tagged images from a commodity drone survey. We use a fairly common workflow which involves first building a 3D model of the scene, then rendering an orthomosaic, and finally generating predictions on the orthomosaic using a deep convolutional object detector. Specifically, we use the same Agisoft Metashape parameters as described in previous sections. We generate an orthomoasiac using the default settings, which leverages a mosaicing approach to generating the texture and blends the observations based on the mesh geometry. We then use DeepForest \cite{Weinstein2020DeepForest:Delineation}, which is a deep learning model trained on a diverse set of trees labeled in drone orthomosaics, to predict the bounding boxes for each tree in the image. An important consideration when using DeepForest is the geospatial input resolution, because this is known to have a strong impact on performance. Since our orthomoasics are in geospatial coordinates, we know the resolution in meters per pixel. Therefore, we resample the images to a consisent resolution of 0.1 meters per pixel, which matches the data that DeepForest was trained on.
+%We use a fairly common workflow which involves first building a 3D model of the scene, then rendering an orthomosaic, and finally generating predictions on the orthomosaic using a deep convolutional object detector. Specifically, we use the same Agisoft Metashape parameters as described in previous sections. We generate an orthomoasiac using the default settings, which leverages a mosaicing approach to generating the texture and blends the observations based on the mesh geometry. 
+
+
+
+A widely-used method for tree detection in drone imagery is DeepForest \cite{Weinstein2020DeepForest:Delineation}, an object detection approach that was trained on a diverse set of semi-supervised tree annotations across the US. 
+
+
+We then use DeepForest \cite{Weinstein2020DeepForest:Delineation}, which is a deep learning model trained on a diverse set of trees labeled in drone orthomosaics, to predict the bounding boxes for each tree in the image. An important consideration when using DeepForest is the geospatial input resolution, because this is known to have a strong impact on performance. Since our orthomoasics are in geospatial coordinates, we know the resolution in meters per pixel. Therefore, we resample the images to a consisent resolution of 0.1 meters per pixel, which matches the data that DeepForest was trained on.
 
 To serve as training and test data, we manually labeled a small region of trees. 
 
@@ -140,6 +205,8 @@ To serve as training and test data, we manually labeled a small region of trees.
 \end{figure}
 
 To conduct meaningful experiments with multiple types of geospatial data, it is important to have accurate registration. 
+
+%The goal of this study is to understand the quality of tree predictions in satellite versus drone data. We also wanted to explore how much improvement a small set of annotations could yeild. Finally, we wanted to see how best to predict trees in a large expanse of satellite data using only a small number of labeled trees and a drone datasets collected around them.
 
 \begin{itemize}
     \item TODO finish talking about the experimental setup 
@@ -157,6 +224,12 @@ In optimization problems, it is important to define a clear metric for desirable
 
 
 \subsection{Feature extraction on remote sensing data}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figs/methods/IPP/TSNE_features.png}
+    \caption{Unsupervised features seperate classes in a t-SNE embedding}
+    \label{fig:methods:ipp_feature_embedding}
+\end{figure}
 We begin by running MOSIAKS \cite{Rolf2021}. Then we do dimensionality reduction with PCA or a VAE. This was motivated by the work of \cite{Candela2020PlanetaryMapping}. Then features are unitized. 
 
 In this work, we need a system that can generate predictions from aerial/satellite data when trained on in-situ measurements such as species classification or biomass. Many domain-specific models exist for these tasks for a given modality. However, it is challenging to find or implement these models, especially for a non-technical domain expert. 
@@ -204,6 +277,27 @@ One major limitation of GPs is they are best suited to problems with several doz
 
 
 
-\begin{itemize}
-    \item We employ a sampling-based strategy to build a long horizon offline path. This takes in an initial location, a number of samples, and a traversal budget. The algorithm begins by computing the gaussian process uncertainty after only observing the first location. Then, a feasible region is computed using a fraction of the remaining budget. A fixed number of samples are drawn from this feasible region, using a weighted sampling based on their uncertainty. The sample which reduces the total map unceratinty the most is added to the plan. Then the points are ordered using a TSP solver. The feasible region is recomputed using the added points and the fraction of the remaining budget.
-\end{itemize}
+ We employ a sampling-based strategy to build a long horizon offline path. This takes in an initial location, a number of samples, and a traversal budget. The algorithm begins by computing the gaussian process uncertainty after only observing the first location. Then, a feasible region is computed using a fraction of the remaining budget. A fixed number of samples are drawn from this feasible region, using a weighted sampling based on their uncertainty. The sample which reduces the total map unceratinty the most is added to the plan. Then the points are ordered using a TSP solver. The feasible region is recomputed using the added points and the fraction of the remaining budget.
+
+\subsection{Problem formulation}
+The goal of the experiments is to model a realistic data collection scenario. The data is collected over a series of missions, where each mission must be fully planned before it is executed. Each mission is allowed a pathlength budget and a number of samples it is allowed to collection. 
+
+In our experiments we use randomly-sampled NAIP tiles to evaluate the approach. In each situation the agent starts in the center of the environment and must return there after each mission.
+
+In these experiments we use a very simple prediction system to predict the class of unobserved pixels. It is simply a nearest-neighbor classifier which operates on the same PCA-compressed MOSAIKS features that are used for planning. While simple, this approach is well-suited to the extremely low number of training samples used in this setting and the standardized and uncorrelated nature of our feature space.
+
+Before any missions have been executed, the agent can only observe the label of the pixel it is at. Then it plans a mission and executes it, observing the labels at the chosen sampling locations. These samples are used to train a prediction model which is used for evaluation and, in theory, could be used to inform the plan for the next mission. 
+
+
+The experiments were conducted over ten random domains, which each represented an 800x800px crop from the Chesapeake Bay land cover dataset. Each tile represents approximately half a kilometer square. The pathlength was set as 800 pixels as well, which meant that the agent could go to one side of the environment and return to the start within the budget but some corners were completely unreachable. Each domain was explored using four missions where 10 samples could be collected during each one. Each sample meant the agent could observe the class of one pixel. After each mission, the class of all pixels  were predicted using the nearest neighbor classifier and the error metrics were computed. 
+
+
+\subsection{Metrics}
+The quality of the predictions are evaluated on two metrics, accuracy and averaged recall. The first is simply the fraction of pixels in the map that were assigned the correct class label by the prediction system. The second represents the average of the per class recalls. This metric is chosen so that rare classes are treated equally in the evaluation procedure, since this is critically important when we explicitly want to find rare classes. We also report the time taken to generate the plan. Note that this does not include the time taken to generate the class predictions, since the planner is agnostic to the choice of prediction algorithm.
+
+ 
+ \begin{itemize}
+     \item Talk about this in far more detail
+     \item Add some more figures to describe the process
+     \item Finish algorithm descriptions
+ \end{itemize}
