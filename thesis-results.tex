@@ -1,6 +1,10 @@
 \chapter{Results} \label{chapResults}
 \section{Photogrametry on Drone Forest Images}
-A key first step in all the approaches we used is understanding the structure of the forest scene. The most flexible technique we used was structure from motion, since it only required uncalibrated images to obtain mesh representations of the environment. We found that the quality of the results depended heavily on the flight pattern that was used to collect the data. Automated over canopy lawnmower surveys performed the best and manual over canopy flights were slightly worse because of the lower density of observations and decreased consistency. Under canopy manual data collects had the worst results and often failed to properly identify the pose of many of the cameras. Results can be seen in Figure \ref{fig:results:sfm}.
+An important first step in multiple approaches the approaches we used is understanding the structure of the forest scene. We ran Agisoft Metashape with the parameters from \cite{Young2022} on a variety of datasets. Three collects shown in Figure \ref{fig:results:sfm} are representative of the types of we data experimented with. The first dataset, \textit{Stowe}, was collected with a lawnmower survey from a commodity drone. The locations of all the cameras were properly estimated and the results look good throughout. Some geometry of the trees can be seen, but much of the fine detail is lost, which is common for photogrametery. The next collect is \textit{Warton}, which was collected with the custom payload at an off-nadir angle and manual flight pattern observing roughly the same region from different angles. All of the cameras were properly aligned, but the quality of the mesh varies dramatically. In the center where there are multiple observations, the results are fairly good. However, both the structure and texture become more blurry farther away from the central area. This is likely because there are fewer camera view to triangulate and those regions are farther away. This mesh is darker than the \textit{Stowe} it was underexposed, due to a fixed exposure between collects. It is important to balance under- and over-exposure, espectially in regions with different brighnesses. A further consideration is that longer exposures are more prone to motion blur, which is especially common while the drone is turning.
+Finally, \textit{Coimbra} is a collect where the drone follows a path between trees. The data is captured with the custom payload facing forward at an off-nadir angle. A large portion of this trajectory appeared to be roughly accurate. However, in multiple instances, a set of cameras and the associated mesh were rotated relative to the correct orientation. This resulted in odd artifacts that made the mesh effectively unusable. Furthermore, the level of visual detail was fairly low.
+
+These results support the common practice of automated drone surveys, since this method yielded consistently high-quality results across all the datasets we experimented on. However, it also shows that manual flight patterns over canopy yield some useful data and challenging under-canopy conditions are somewhat successful. This suggests that traditional drone surveys are well-motivated, but further research on photogrametry for more challenging forest scenarious may yeild useful results.
+
 
 \begin{figure}[H]
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/geometric_understanding/stowe_anew_collect_000_zoomed_out.png}}
@@ -14,15 +18,19 @@ A key first step in all the approaches we used is understanding the structure of
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/geometric_understanding/coimbra_zoomed_out.png}}
     \hfill
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/geometric_understanding/coimbra_zoomed_in.png}}
-    \caption{3D reconstructions using Agisoft Metashape on three different environments. The full map is shown to the left and a zoomed-in inset is shown to the right.}
+    \caption{3D reconstructions using Agisoft Metashape on three different environments. From top to bottom, they are a lawnmower pattern with a commodity drone,  The full map is shown to the left and a zoomed-in inset is shown to the right.}
     \label{fig:results:sfm}
 \end{figure}
 
-A practical consideration when working with these systems is the camera exposure. This is generally handled well by commodity systems, but may need to be hand-tuned on an experimental robotic system. If the exposure is too long, especially in the case of rapid drone movement, there can be motion blur which degrades the quality of reconstructions. Similarlly, both over and under-exposed images lead to fewer features to match between images and areas of minimial information in the final mesh.  
+%A practical consideration when working with these systems is the camera exposure. This is generally handled well by commodity systems, but may need to be hand-tuned on an experimental robotic system. If the exposure is too long, especially in the case of rapid drone movement, there can be motion blur which degrades the quality of reconstructions. Similarlly, both over and under-exposed images lead to fewer features to match between images and areas of minimial information in the final mesh.  
 
 \subsection{SLAM in Forest Environments}
+We were interested in comparing the results of SLAM to photogrametry because these two systems represent an interesting tradeoff. SLAM approaches generally require multiple sychnronized and calibrated sensors, with LiDAR being a common requirement. However, they can run in an online manner which can be used to inform robots next actions. Photogrametery requires only images, with optional GPS. The downside is it is computationally expensive and must be run in a batch after all the images have been collected.
 
-We validate our SLAM system by comparing it to the structure from motion result in Figure \ref{fig:results_mapping_slam}. This analysis was conducted solely by Dr. Francisco Yandun. 
+We conduct this comparison on the \textit{Gascola} dataset that was surveyed with lawnmower coverage and the custom payload at an off-nadir angle. We ran photogrametry using the default parameters. Francisco Yandun ran a tuned version of LIO-SAM and conducted the comparison between the two approaches.
+
+As shown in Figure \ref{fig:results:slam_photogrametry_comparison}, the two maps agree fairly well in most regions. A notable source of high error is the tops of trees. In general, our qualitative assessment suggested that the SLAM approach was better at capturing these fine details compared to photogrametry. This is because it had the benefit of explicit 3D data from the LiDAR, while the photogrametery approach had to infer 3D information from images. This often leads to sharp points and fine detail being lost.
+
 
 \begin{figure*}[h!]
    \centering
@@ -37,45 +45,49 @@ We validate our SLAM system by comparing it to the structure from motion result 
    \subfloat[]{
         \label{fig:slam_hausdorff}         %% Etiqueta para la segunda subfigura
         \includegraphics[width=0.5\textwidth]{figs/results/geometric_understanding/housedorff_distance.eps}}%\\[20pt]            
-   \caption{Point cloud maps of the A) photogrammetry baseline, B) SLAM outcome. The two maps were compared using the Hausdorff distance, whose result is visualized as C) the SLAM map colored according to this metric. Note that the baseline and the SLAM clouds colormaps correspond to RGB and height values, respectively. Figure courtesy of Dr. Francisco Yandun.}
-   \label{fig:results_mapping_slam}                %% Etiqueta para la figura entera
+   \caption{Point cloud maps of the A) photogrammetry baseline, B) SLAM outcome. The two maps were compared using the Hausdorff distance, whose result is visualized as C) the SLAM map colored according to this metric. Note that the baseline and the SLAM clouds colormaps correspond to RGB and height values, respectively. Analysis and figure provided by Francisco Yandun.}
+   \label{fig:results:slam_photogrametry_comparison}                %% Etiqueta para la figura entera
 \end{figure*}
 
+\section{Tree Detection using Data at Multiple Scales}
+The goal of this study is to understand the quality of tree predictions in satellite versus drone data. We also wanted to explore how much improvement a small set of annotations could yeild. Finally, we wanted to see how best to predict trees in a large expanse of satellite data using only a small number of labeled trees and a drone datasets collected around them.
+
+The first step in this processes was processing the drone images into an orthomosaic, as described in the Photogrametry section. The orthomosiac was roughly geospatially regestered from the GPS readings where each image was taken. However, we noticed a translational error of several meters when the orthomosaic was overlaid on the NAIP data. Fixed translatinoal offsets are a common error with consumer GPS, though scale and rotation are often much more accurate. We fix this issue manually using an overlay in QGis to estimate the translational offset, and then updating the metadata using `gdalwarp`  
+
+
+In the first experiment, we simply
+
+
+Our work shows that the tree detection results are substantially better on drone data compared to NAIP as shown in Figure \ref{fig:results:tree_det}. However, the quality of NAIP detections can be improved substantially by finetuning the model on only a small amount of data.
+
 \begin{itemize}
-    \item Talk more about the way SLAM was run
-    \item Talk more about the comparison
+    \item TODO expand this
+    \item TODO the most important figure to add is probably a table of metrics for the different approaches.
+    \item TODO Talk about how many trees get detected as multiple smaller ones. This could be a histogram of sqrt areas. 
 \end{itemize}
 
+\begin{figure}[h]
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/stowe_anew_base.png}}
+    \hfill
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/stowe_anew_retrained.png}}
+    \vfill
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_base.png}}
+    \hfill
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_retrained.png}}
+    \caption{Tree detections on an orthomosiac (top) and NAIP data (bottom). The left column shows the DeepForest predictions without any retraining, while the right column shows the results after retraining on a small amount of local annotations.}
+    \label{fig:results:tree_det}
+\end{figure}
 
-\section{Semantic mapping}
-An unfortunate challenge of semantic mapping is that it's nearly impossible to collect a groundtruth representation without survey-grade equiptment and extensive annotation resources. Therefore, we perform most of our quantitative evaluation purely on the images, and show only qualitative results from the final semantic map. 
+
+
+
+
+\section{Semantic Mapping for Vegetation Classification}
+The goal of this work is to build a 3D map of the environment that is annotated with the type of vegetation at each location. A challenge of this work is that we did not have access to field-reference data for the true locations of the different types of vegetatoin. Therefore, we conduct much of our quantitative evaluation on the semantic segmentation predictions, that can be more easily compared to human-labeled images. 
 
 \subsection{Image Segmentation}
-
-
-
-\subsubsection{Sete Fonte experiment}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.7\columnwidth]{figs/results/semantic_segmentation/confusion_matrix.pdf} 
-    \caption{Confusion matrix for the \textit{Setes Fontes} test datasets normalized per class with the true fraction of each class reported on the y axis labels.
-    %Fuel is predicted fairly well, though it is fairly often confused for canopy, which is understandable given the visual similarity and the large fraction of canopy pixels.
-    }
-    \label{fig:semantics_confusion}
-\end{figure}
-\begin{figure}
-   % First row
-   \centering
-    \includegraphics[width=\linewidth]{figs/results/semantic_segmentation/SeteFontes/qualatative_001400.png}  
-    \includegraphics[width=\linewidth]{figs/results/semantic_segmentation/SeteFontes/qualatative_001600.png}  
-    \caption{Predictions on the \textit{Oporto} dataset. Black is background, red is fuel, brown is trunks, and green is canopy.
-    %Note that low trees are often predicted as fuel.
-    } 
-    \label{fig:qualitative_semantics_semfire}
-\end{figure}
-
-We conducted experiments to determine how many real training images were needed, with and without synthetic pretraining, as seen in Figure \ref{fig:results:semantic-size-pretraining}. We used mean Intersection over Union (mIoU) to evaluate the quality of the predictions on the test set. It is interesting to note the relatively high performance of a model that used only 7 real images. Also, the model trained solely on synthetic data fails to generalize to real data, even after properly accounting for differences in mean and variance of both datasets. We found that combined real and synthetic data performs worse than training the same model only using real data. This suggests that the synthetic data comes from a completely different distribution than the real one, making its contribution detrimental. In the future, we plan to keep researching the causes of this interesting outcome.
+We conduct two experiments related to semantic segmentation. The first is a study using under-canopy data to determine the potential for synthetic pretraining and the impact of the number of training images on performance. The second is an evaluation of the model we used in over-canopy mapping with a small set of training examples.
+\subsubsection{Sete Fonte Experiment}
 
 \begin{figure}
     \centering
@@ -85,14 +97,38 @@ We conducted experiments to determine how many real training images were needed,
     \label{fig:results:semantic-size-pretraining}
 \end{figure}
 
-As the model trained in 121 images ($80\%$ of the \textit{Setes Fontes} dataset) showed the best performance and was used for deployment in the \textit{Oporto} dataset, which was never seen during training.
-%Qualitative examples of both can be seen in Figure \ref{fig:qualitative_semantics_semfire} and
-The confusion matrix on the \textit{Setes Fontes} test set can be found in Figure \ref{fig:semantics_confusion} and qualitative results are in Figure \ref{fig:qualitative_semantics_semfire}. As we are mainly interested in the fuel instances, we aggregated the background, trunks, and canopies in a single non-fuel class. In that case we obtained an IoU of 78.2\% and 95.3\% for \texttt{Fuel} and \texttt{Not Fuel}, respectively, which yields a mIoU of 86.7\%. This shows that our system performs well at its primary task of identifying fuel.
+In this experiment, we compare a model trained just on synthetic data from \textit{Synthetic}, models pretrained on \textit{Synthetic} and then increasing ammounts of real data, and models trained solely on increasing ammounts of real data. The mean Intersection over Union on the test set of each of these configurations is shown in Figure \ref{fig:results:semantic-size-pretraining}.
+It is interesting to note the relatively high performance of a model that used only 7 real images. Also, the model trained solely on synthetic data fails to generalize to real data, even after properly accounting for differences in mean and variance of both datasets. We found that combined real and synthetic data performs worse than training the same model only using real data. This suggests that the synthetic data comes from a completely different distribution than the real one, making its contribution detrimental. In the future, we plan to keep researching the causes of this interesting outcome.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\columnwidth]{figs/results/semantic_segmentation/confusion_matrix.pdf} 
+    \caption{Confusion matrix for the \textit{Setes Fontes} test datasets normalized per class with the true fraction of each class reported on the y axis labels.
+    %Fuel is predicted fairly well, though it is fairly often confused for canopy, which is understandable given the visual similarity and the large fraction of canopy pixels.
+    }
+    \label{fig:results:sete_fontes_confusion_matrix}
+\end{figure}
+
+Since the model trained in 121 images ($80\%$ of the \textit{Setes Fontes} dataset) showed the best performance in these experiments, we conducted further experiments on it. The confusion matrix on the \textit{Sete Fontes} test set is shown in Figure \ref{fig:results:sete_fontes_confusion_matrix}. This shows that all four classes are predicted with reasonable accuracy. A common source of confusion is between trunks and canopies, which is understandable because they frequently overlap. Canopies are also confused for background, which includes sky. Even though these two classes look very different, sky can often be seen through the canopy, and the network miss-classifies these fine details. In most cases, this error is harmless because no LiDAR information should correspond to the sky pixels. Finally, the most common error for fuel is canopies, which is understandable because they are both leafy vegetation. Information about the height, either provided to the model or used in post-processing, could help disambiguate this confusion. 
+
+Since we are mainly interested in the fuel instances, we aggregated the background, trunks, and canopies in a single non-fuel class. In that case we obtained an IoU of 78.2\% and 95.3\% for \texttt{Fuel} and \texttt{Not Fuel}, respectively, which yields a mIoU of 86.7\%. This shows that our system performs well at its primary task of identifying fuel.
+
+\begin{figure}
+   % First row
+   \centering
+    \includegraphics[width=\linewidth]{figs/results/semantic_segmentation/SeteFontes/qualatative_001400.png}  
+    \includegraphics[width=\linewidth]{figs/results/semantic_segmentation/SeteFontes/qualatative_001600.png}  
+    \caption{Predictions on the \textit{Oporto} dataset. Black is background, red is fuel, brown is trunks, and green is canopy.
+    %Note that low trees are often predicted as fuel.
+    } 
+    \label{fig:results:oporto_semantic_seg_qual}
+\end{figure}
 
 
+The end goal of this model is to be useful on the semantic mapping task on the \textit{Oporto} dataset, that wasn't seen during training. We show two qualitative examples of predictions in Figure \ref{fig:results:oporto_semantic_seg_qual}. The predictions still appear fairly accurate, despite the change in camera perspective from ground to aerial and different images characteristics. 
 
-\subsubsection{Gascola experiment}
-We evaluated our model by training it on data from one flight and testing it on another. Because of the images we chose, these two datasets had different class distributions as shown in Figure \ref{fig:results:semantic_class_fracs}, though they had the same three main classes. Each of these three classes corresponded to a different aggregate class, so it was important to effectively tell them apart. 
+
+\subsubsection{Gascola Experiment}
+In this experiment, we used two different datasets from \textit{Gascola} which partially covered the same region. We train on one dataset and test the model on the other. Because of the small number of images that we used in this experiment, these two datasets had different class distributions as shown in Figure \ref{fig:results:semantic_class_fracs}, though they had the same three main classes. Each of these three classes corresponded to a different aggregate class (Background, Canopy, and Fuel), so it was important to effectively tell them apart. 
 
 
 \begin{figure*}[h!]
@@ -128,7 +164,7 @@ Live Trunks & 0.05 & 0.05 & 84.09 \\
 \bottomrule
 % \hline
 \end{tabular}
-\caption{Evaluation results of the SegNext network with the Anderson Fuel Model as a base for semantic segmentation in a forestry environment.}
+\caption{Evaluation results of the SegNext \cite{} network with the Anderson Fuel Model as a base for semantic segmentation in a forestry environment.}
 \label{tab:results:semantic_eval}
 \end{table}
 
@@ -155,7 +191,8 @@ Live Trunks & 0.05 & 0.05 & 84.09 \\
 \subsection{Projecting Segmentation into 3D}
 The final goal of semantic mapping is to develop a model of the environment and what class different regions are. To evaluate the feasibility of this, we conduct two experiments using multi-sensor data.
 
-The first experiment uses data that we collected under the canopy using a payload inclination of 30 degrees from horizontal. The drone was manually piloted to survey the perimeter of a clearing. We the best model described in the previous Gascola section to generate predictions on the images and localization from the vision-LiDAR SLAM system from \cite{RussellUnmannedMitigation}. The results are shown in Figure \ref{fig:semantic_SLAM_result}. This shows that the system was able to determine that there was significant fuel at ground level and correctly identify the tree trunks in the environment. The later is important because they could be used as a localization aid in a similar way to SLOAM \cite{Chen2020SLOAM:Inventory}. One issue that we observed was that multiple scans were not perfectly registered to each other. This is in contrast to the final pointcloud derived from SLAM, where fine details are captured preciseslly. Our hypothesis is that because the SLAM system uses a pose-graph \cite{Dellaert2017FactorPerception} formulation, information from loop closures can be used to update the historical pose to make it more accurate. However, the semantic mapping system only uses the most recent SLAM pose estimate, which is likely to be less accurate than the final optimzed version.
+The first experiment is conducted on the \textit{Oporto} dataset, which is collected in a clearing in Portugal with the custom payload at an orientation of 30 degrees from horizontal. For semantic segmentation we use the model trained on \textit{Sete Fontes}. For localization, we use the vision-LiDAR SLAM system from \cite{RussellUnmannedMitigation}.
+The results are shown in Figure \ref{fig:results:semantic_mapping_original}. This shows that the system was able to determine that there was significant fuel at ground level and correctly identify the tree trunks in the environment. The later is important because trunks could be used as a localization aid in a similar way to SLOAM \cite{Chen2020SLOAM:Inventory}. One issue that we observed was that multiple scans were not perfectly registered to each other. This is in contrast to the final pointcloud derived from SLAM, where fine details are captured precisely. Our hypothesis is that because the SLAM system uses a pose-graph \cite{Dellaert2017FactorPerception} formulation, information from loop closures can be used to update the historical pose to make it more accurate. However, the semantic mapping system only uses the most recent SLAM pose estimate, which is likely to be less accurate than the final optimized version.
 
 \begin{figure}
     \centering
@@ -164,50 +201,22 @@ The first experiment uses data that we collected under the canopy using a payloa
     \label{fig:results:semantic_mapping_original}
 \end{figure}
 
-In our second experiment, we sought to evaluate the performance more objectively. This is challenging because accurate field-reference data is challenging to acquire. Instead, we choose to label an ortho-mosoaic derived from a 3D model by hand. We used QGis\footnote{\url{https://qgis.org/en/site/}}, an open-source software for interacting with geospatial data. We labeled three coarse classes, fuel, canopy and background, which included bare-earth and other non-flammable material. This manual process took approximately eight hours to complete and is visualized on the left side of Figure \ref{fig:results:semantic_map_UFO}.
+A limitation of the first experiment was our lack of ground truth data to compare against.
+In our second experiment on the \textit{Gascola} dataset, we still did not have field reference data, but tried to approximate this as accurately as possible.
+We choose to label an ortho-mosoaic derived from a 3D model by hand. We used QGis \cite{QGIS_software}, an open-source software for interacting with geospatial data. We labeled three coarse classes, fuel, canopy and background, which included bare-earth and other non-flammable material. Trunks were not included because they could almost never be observed in the top-down view from the orthomosaic. This manual process took approximately eight hours to complete and is visualized on the left side of Figure \ref{fig:results:semantic_map_UFO}.
 
-We used the SLAM output from LIO-SAM to provide the estimated pose. In this case, we used a the UFOMap version of semantic mapping developed primarily by Duda Andrada. There results of this are shown in Figure \ref{fig:results:semantic_map_UFO}. The overall structure of the scene matches well and small local features are correctly identified. One major source of error is seen in the miss-registration of data from adjacent drone flights. This is seen in the vertical offsets that are especially visible on the left side of the map. This may be due to latency in the processing or also because of using the un-refined pose as described previously. The quality of this result suggests that with additional work to properly register the scans, this system could be a powerful tool for vegitation mappng. 
+In this experiment, we used the SegNext model trained on the manually-labeled dataset from the flight we were not using for mapping. We used the localization LIO-SAM \cite{} and provided by Franciso Yandun to estimate pose. In this case, we used UFOMap instead of octomap to aggreate the observations, because of the improved performance. This change was implemented by Duda Andrada and she conducted the experiments reported here. There results of this are shown in Figure \ref{fig:results:semantic_map_UFO}. The overall structure of the scene matches well and small local features are correctly identified. One major source of error is seen in the miss-registration of data from adjacent drone flights. This is seen in the vertical offsets that are especially visible on the left side of the map. This may be due to latency in the processing or also because of using the un-refined pose as described previously. The quality of this result suggests that with additional work to properly register the scans, this system could be a powerful tool for vegetation mapping. 
 
 \begin{figure}
     \centering
     \includegraphics[width=0.45\textwidth]{figs/results/semantic_mapping/labeled_orthomoasaic.png}
     \includegraphics[width=0.45\textwidth]{figs/results/semantic_mapping/segnext_gc5_ufomap.png}
-    \caption{Manually-labeled result on the left, result from UFO-Map on the right provided by M. Duda Andrada, using the semantic segementation model described previously. }
+    \caption{Manually-labeled result on the left, result from UFO-Map on the right provided by M. Duda Andrada, using the SegNext model trained on Gascola Data.}
     \label{fig:results:semantic_map_UFO}
 \end{figure}
 
 
-\section{Tree Detection}
-The goal of this study is to understand the quality of tree predictions in satellite versus drone data. We also wanted to explore how much improvement a small set of annotations could yeild. Finally, we wanted to see how best to predict trees in a large expanse of satellite data using only a small number of labeled trees and a drone datasets collected around them.
-
-The first step in this processes was processing the drone images into an orthomosaic, as described in the Photogrametry section. The orthomosiac was roughly geospatially regestered from the GPS readings where each image was taken. However, we noticed a translational error of several meters when the orthomosaic was overlaid on the NAIP data. Fixed translatinoal offsets are a common error with consumer GPS, though scale and rotation are often much more accurate. We fix this issue manually using an overlay in QGis to estimate the translational offset, and then updating the metadata using `gdalwarp`  
-
-
-In the first experiment, we simply
-
-
-Our work shows that the tree detection results are substantially better on drone data compared to NAIP as shown in Figure \ref{fig:results:tree_det}. However, the quality of NAIP detections can be improved substantially by finetuning the model on only a small amount of data.
-
-\begin{itemize}
-    \item TODO expand this
-    \item TODO the most important figure to add is probably a table of metrics for the different approaches.
-    \item TODO Talk about how many trees get detected as multiple smaller ones. This could be a histogram of sqrt areas. 
-\end{itemize}
-
-\begin{figure}[h]
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/stowe_anew_base.png}}
-    \hfill
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/stowe_anew_retrained.png}}
-    \vfill
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_base.png}}
-    \hfill
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_retrained.png}}
-    \caption{Tree detections on an orthomosiac (top) and NAIP data (bottom). The left column shows the DeepForest predictions without any retraining, while the right column shows the results after retraining on a small amount of local annotations.}
-    \label{fig:results:tree_det}
-\end{figure}
-
-
-\section{Informative path planning}
+\section{Informative Path Planning for Commodity Drones}
 
 \begin{figure}[h]
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/unpaired_qual_1 (1).png}}
@@ -235,12 +244,6 @@ Our work shows that the tree detection results are substantially better on drone
     \caption{Quantitative statistics for IPP. TODO replace with updated ones.}
     \label{fig:res_ipp_quant}
 \end{figure}
-
-\subsection{Evaluation}
-\begin{itemize}
-    \item TODO explain the qualitative differences in paths, e.g. it stays in more varied areas longer
-    \item TODO explain
-\end{itemize}
 
 The experiments demonstrate a small but significant improvement in both error metrics from the proposed, as can be seen in Figure~\ref{fig:quant}. It should be noted that the variance of both approaches were high, which highlights the need for further experiments.
 
