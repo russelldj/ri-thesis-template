@@ -22,4 +22,9 @@
     \item Evaluating the performance of different feature extractors
 \end{itemize}
 
+Experiments on this topic are ongoing. We propose to add two more experiments to this list. These involve fine-tuning a model for aerial data on predicted tree locations from the drone data. In one case we used predictions from the pretrained model and in the other case we use predictions from the fine-tuned model. We hypothesis that this multi-stage approach will increase performance because of the increased diversity of training examples.  
+
+Quantitative evaluation is also ongoing. To get an realistic assessment of the quality, we need a test set that was not within the drone data used in any of the experiments. Unfortunately, we need the drone data to label the ground truth tree locations. Therefore, we plan conduct this experiment with a two-fold evaluation scheme using the Stowe and Weisner datasets that were collected in the same region of Vermont US. This will require registering 
+In each case, we generate predictions on one location, and if applicable, use the other location for training. We evaluate the performance based on precision and accuracy, with a given IoU threshold used to determine whether a prediction matches a ground truth. We also evaluate the average IoU between predictions and groundtruth.
+
 

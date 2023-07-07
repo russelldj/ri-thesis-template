@@ -6,7 +6,7 @@ Finally, \textit{Coimbra} is a collect where the drone follows a path between tr
 These results support the common practice of automated drone surveys, since this method yielded consistently high-quality results across all the datasets we experimented on. However, it also shows that manual flight patterns over canopy yield some useful data and challenging under-canopy conditions are somewhat successful. This suggests that traditional drone surveys are well-motivated, but further research on photogrametry for more challenging forest scenarious may yeild useful results.
 
 
-\begin{figure}[H]
+\begin{figure}[h]
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/geometric_understanding/stowe_anew_collect_000_zoomed_out.png}}
     \hfill
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/geometric_understanding/stow_anew_collect_000_zoomed_in.png}}\\
@@ -50,35 +50,25 @@ As shown in Figure \ref{fig:results:slam_photogrametry_comparison}, the two maps
 \end{figure*}
 
 \section{Tree Detection using Data at Multiple Scales}
-The goal of this study is to understand the quality of tree predictions in satellite versus drone data. We also wanted to explore how much improvement a small set of annotations could yeild. Finally, we wanted to see how best to predict trees in a large expanse of satellite data using only a small number of labeled trees and a drone datasets collected around them.
-
-The first step in this processes was processing the drone images into an orthomosaic, as described in the Photogrametry section. The orthomosiac was roughly geospatially regestered from the GPS readings where each image was taken. However, we noticed a translational error of several meters when the orthomosaic was overlaid on the NAIP data. Fixed translatinoal offsets are a common error with consumer GPS, though scale and rotation are often much more accurate. We fix this issue manually using an overlay in QGis to estimate the translational offset, and then updating the metadata using `gdalwarp`  
-
-
-In the first experiment, we simply
-
-
-Our work shows that the tree detection results are substantially better on drone data compared to NAIP as shown in Figure \ref{fig:results:tree_det}. However, the quality of NAIP detections can be improved substantially by finetuning the model on only a small amount of data.
-
-\begin{itemize}
-    \item TODO expand this
-    \item TODO the most important figure to add is probably a table of metrics for the different approaches.
-    \item TODO Talk about how many trees get detected as multiple smaller ones. This could be a histogram of sqrt areas. 
-\end{itemize}
+In this experiment we generate predictions on two different modalities from the same \textit{Stowe} cite. The first is an orthomosaic derived from the drone and the second is NAIP imagery derived from aerial data. These predictions are shown in Figure \ref{fig:results:tree_det}. 
+The predictions on drone data appear significantly better than those from the NAIP data. This is unsurprising because of the increased detail provided by the higher resolution data. What is somewhat surprising is that fine-tuning the model did not appear to improve performance significantly. This motivates further analysis and quantitative evaluation of these results.
 
 \begin{figure}[h]
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/stowe_anew_base.png}}
+    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/base_image.png}}
     \hfill
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/stowe_anew_retrained.png}}
+    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/naip_image.png}}
     \vfill
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_base.png}}
+    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/drone_base.png}}
     \hfill
-    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_retrained.png}}
-    \caption{Tree detections on an orthomosiac (top) and NAIP data (bottom). The left column shows the DeepForest predictions without any retraining, while the right column shows the results after retraining on a small amount of local annotations.}
+    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/naip_base.png}}
+    \vfill
+    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/drone_retrained.png}}
+    \hfill
+    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/naip_retrained.png}}
+    \caption{Tree detections on a drone versus aerial data with and without fine-tuning on local data. Results for orthomosaics are on the left and NAIP is on the right. The first row is the input data, the second is the predictions from the base model, and the final is the predictions from the fine-tuned model. All predictions are visualized over drone data for clarity.
+    }
     \label{fig:results:tree_det}
 \end{figure}
-
-
 
 
 
@@ -217,13 +207,14 @@ In this experiment, we used the SegNext model trained on the manually-labeled da
 
 
 \section{Informative Path Planning for Commodity Drones}
+We evaluate the informative path planning approach on an area near Herndon, VA. This has a mix of farmfield and forest, with occasional buildings and roads. As seen in Figure~\ref{fig:results:ipp_paired}, when run on the same data, the proposed approach is able to come up with a plan that yields a more representative sample of the environment, compared to the baseline. Further examples of the proposed planning method run on image data can be seen in Figure~\ref{fig:results:ipp_unpairqual}. 
 
 \begin{figure}[h]
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/unpaired_qual_1 (1).png}}
     \hfill
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/unpaired_qual_2 (1).png}}
     \caption{Visualizations of the proposed planning method on two different data images.}
-    \label{fig:res_unpairqual}
+    \label{fig:results:ipp_unpairqual}
 \end{figure}
 
 
@@ -232,25 +223,26 @@ In this experiment, we used the SegNext model trained on the manually-labeled da
     \hfill
     \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/paired_qual_pizza (1).png}}
     \caption{A comparison of the proposed method with a baseline}
-    \label{fig:res_pairedqual}
+    \label{fig:results:ipp_paired}
 \end{figure}
+
+The experiments demonstrate a small but significant improvement in both error metrics from the proposed, as can be seen in Figure~\ref{fig:results:ipp_quant}. It should be noted that the variance of both approaches were high, which highlights the need for further experiments.
 
 \begin{figure}[h]
-    \subfloat{\includegraphics[width=0.3\textwidth]{figs/results/ipp/error (2).png}}
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/error (2).png}}
     \hfill
-    \subfloat{\includegraphics[width=0.3\textwidth]{figs/results/ipp/balanced_error (2).png}}
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/balanced_error (2).png}}
     \hfill
-    \subfloat{\includegraphics[width=0.3\textwidth]{figs/results/ipp/timing_result (1).png}}
-    \caption{Quantitative statistics for IPP. TODO replace with updated ones.}
-    \label{fig:res_ipp_quant}
+    \centering
+    \subfloat{\includegraphics[width=0.45\textwidth]{figs/results/ipp/timing_result (1).png}}
+    \caption{Quantitative statistics for the informative path planning approach.}
+    \label{fig:results:ipp_quant}
 \end{figure}
 
-The experiments demonstrate a small but significant improvement in both error metrics from the proposed, as can be seen in Figure~\ref{fig:quant}. It should be noted that the variance of both approaches were high, which highlights the need for further experiments.
 
-As seen in Figure~\ref{fig:pairqual}, when run on the same data, the proposed approach is able to come up with a plan that yields a more representative sample of the environment, compared to the baseline. Further examples of the proposed planning method run on image data can be seen in Figure~\ref{fig:unpairqual}. 
 
 An interesting finding is that the performance of both approaches did not improve dramatically over the sampling iterations. This can likely be attributed to the simple prediction model we used which saturated quickly. The performance of the proposed planner was especially stable. This suggests that it was able to very quickly saturate the prediction model by choosing a representative set of samples in the first round.The performance would probably increase more over time if we used a more complex prediction system, instead of nearest neighbor. 
 
-The timing results, seen in the leftmost part of Figure~\ref{fig:quant}, show that the algorithm can plan a mission in approximately 100 seconds using a laptop with a RTX3700 GPU. This shows that this approach is extremely feasible for deployment under operational constraints. An interesting finding is that the timing does not increase significantly over iterations. This is interesting because during the uncertainty estimation portion of the approach we use an increasingly-large Gaussian Process. We expected that the order $n^3$ time of this step would dominate the system runtime, but this was not the case. We will further profile the system timing in future work.
+The timing results, seen in the leftmost part of Figure~\ref{fig:results:ipp_quant}, show that the algorithm can plan a mission in approximately 100 seconds using a laptop with a RTX3700 GPU. This shows that this approach is extremely feasible for deployment under operational constraints. An interesting finding is that the timing does not increase significantly over iterations. This is interesting because during the uncertainty estimation portion of the approach we use an increasingly-large Gaussian Process. We expected that the order $n^3$ time of this step would dominate the system runtime, but this was not the case. We will further profile the system timing in future work.
 
 

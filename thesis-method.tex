@@ -80,38 +80,38 @@ NAIP & \makecell{Continental US} & \makecell{Aerial imagery} & \makecell{Varied}
 \caption{A summary of non-drone datasets used in this work}
 \end{table}
 
-\subsection{Data management}
-A practical consideration when dealing with this much data is how to effectively store, version, organize, and share it in a seamless fashion, especially when working in collaborative teams. The tool used for managing the complexities of software development, such as `git`, have similar goals but do not support managing large, non-text files. 
-Cloud hosting and local harddrives inenvitably become challenging to organize and do not natively support a versioning system, which makes them susceptible to accidental errors or duplicated data. 
-In this work, we leveraged a software tool called Data Version Control (DVC), which is designed for organizing data in large projects such as machine learning and data science. DVC acts as a management layer between a git-tracked project and an arbitrary remote storage device. Effectively, DVC creates light plaintext files which describe the real data. These a small files can be tracked by `git` and represent a full history of the project.  
-
-We created a `git` repo and associated `DVC` datastore for each project we worked on that had a different goal. Our organizational strategy evolved over time, but at the end involved two main concepts: a standardized hierarchy to organize the different data collects and a level designation to sort data based on the level of processing. The organizational structure was as follows `site\_name -> YYYY\_MM\_DD -> collect\_NNN` A site name represented one location where we collected data. This was chosen as the top-level organizational structure because data from the same site is most commonly used together. The next level represented the date and the final level broke the data up into logical segments. In general this corresponded to one drone flight, but in rare instances represented multiple flights where we left the sensors logging continuously, or data collected solely on the ground for calibration purposes. The level designation was inspired by the satellite community, where different levels denote different steps of sequential post-processing. In our work, we used Level0 to represent raw data, as copied from the platform. Level1 represented data processed into a standarized format. This was less important for commodity drone data, since it was frquently already captured as folders of geotagged images. However, it was very important for extracting easy-to-use information from rosbags, which is how our multi-sensor custom data was stored. Level2 represnted processed results such as structure from motion and semantic predictions. In initial work, we nested all the levels within a collect. However, we later found that for our usecases it was easier to have levels be the top level organizational structure. This allowed us to quickly check for all datasets matching a specific level of processing. The final organaiztional structure was as follows:
-
-% TODO fix this up
-
-\begin{verbatim}
-    
-├── level_00
-│   ├── README.md
-│   ├── <site_name_x> # A different folder for each geographic location
-│   │   └── <date_YYYY_MM_DD> # A different folder for each day at that site
-│   |       ├── collect_<NNN> # A different folder for each collect, which is probably synonmous with a flight
-│   │       └── collect_<NNN>
-│   └── <site_name_y>
-│       └── 2023_06_15
-│           ├── collect_<NNN>
-│           └── collect_<NNN>
-├── level_01 
-│   ├── README.md
-│   └── per_collect # Data in easy-to-use format, structured like level_00
-│       └── README.md
-└── level_02
-    ├── README.md
-    └── photogrametry # Photogramtery results
-        ├── README.md
-        └── metashape # Could have multiple softwares
-            └── per_collect # Structured like level_00
-\end{verbatim}
+%\subsection{Data management}
+%A practical consideration when dealing with this much data is how to effectively store, version, organize, and share it in a seamless fashion, especially when working in collaborative teams. The tool used for managing the complexities of software development, such as `git`, have similar goals but do not support managing large, non-text files. 
+%Cloud hosting and local harddrives inenvitably become challenging to organize and do not natively support a versioning system, which makes them susceptible to accidental errors or duplicated data. 
+%In this work, we leveraged a software tool called Data Version Control (DVC), which is designed for organizing data in large projects such as machine learning and data science. DVC acts as a management layer between a git-tracked project and an arbitrary remote storage device. Effectively, DVC creates light plaintext files which describe the real data. These a small files can be tracked by `git` and represent a full history of the project.  
+%
+%We created a `git` repo and associated `DVC` datastore for each project we worked on that had a different goal. Our organizational strategy evolved over time, but at the end involved two main concepts: a standardized hierarchy to organize the different data collects and a level designation to sort data based on the level of processing. The organizational structure was as follows `site\_name -> YYYY\_MM\_DD -> collect\_NNN` A site name represented one location where we collected data. This was chosen as the top-level organizational structure because data from the same site is most commonly used together. The next level represented the date and the final level broke the data up into logical segments. In general this corresponded to one drone flight, but in rare instances represented multiple flights where we left the sensors logging continuously, or data collected solely on the ground for calibration purposes. The level designation was inspired by the satellite community, where different levels denote different steps of sequential post-processing. In our work, we used Level0 to represent raw data, as copied from the platform. Level1 represented data processed into a standarized format. This was less important for commodity drone data, since it was frquently already captured as folders of geotagged images. However, it was very important for extracting easy-to-use information from rosbags, which is how our multi-sensor custom data was stored. Level2 represnted processed results such as structure from motion and semantic predictions. In initial work, we nested all the levels within a collect. However, we later found that for our usecases it was easier to have levels be the top level organizational structure. This allowed us to quickly check for all datasets matching a specific level of processing. The final organaiztional structure was as follows:
+%
+%% TODO fix this up
+%
+%\begin{verbatim}
+%    
+%├── level_00
+%│   ├── README.md
+%│   ├── <site_name_x> # A different folder for each geographic location
+%│   │   └── <date_YYYY_MM_DD> # A different folder for each day at that site
+%│   |       ├── collect_<NNN> # A different folder for each collect, which is probably synonmous with a flight
+%│   │       └── collect_<NNN>
+%│   └── <site_name_y>
+%│       └── 2023_06_15
+%│           ├── collect_<NNN>
+%│           └── collect_<NNN>
+%├── level_01 
+%│   ├── README.md
+%│   └── per_collect # Data in easy-to-use format, structured like level_00
+%│       └── README.md
+%└── level_02
+%    ├── README.md
+%    └── photogrametry # Photogramtery results
+%        ├── README.md
+%        └── metashape # Could have multiple softwares
+%            └── per_collect # Structured like level_00
+%\end{verbatim}
 
 \section{Geometric understanding of forests using drone data}
 \subsection{Photogrametry}
@@ -124,6 +124,26 @@ After preliminary experiments, we found that a commercial software, Agisoft Meta
 \subsection{SLAM}    
 Since SLAM is not the focus of this work, we choose to use results from our collaborators on these datasets. We use two methods from their experiments, LIO-SAM \cite{Shan2020LIO-SAM:Mapping} with the parameters tuned for the forestry domain and a custom SLAM that combines components of both LIO-SAM and VIL-SLAM \cite{Shao2019StereoMapping} to make an approach that combines information from both LiDAR and stereo vision in a tightly-coupled manner. A through description of this system can be found in \cite{RussellUnmannedMitigation}.
 
+\section{Tree Detection in Top-Down Data}
+The goal of this work is to study tree detection at multiple scales. We assume that we have data from three sources, low resolution aerial or satellite data, high resolution drone imagery, and the ground truth location and shape for the trees in a small region. The ground truth trees are assumed to be fully within the region the drone surveyed and the drone survey is assumed be be fully within the region with satellite data. This is a realistic model for a situation where a forester measured the trees in a region and then flew a drone to survey the surrounding area. The remote sensing data could be taken from any relevant available source, such as NAIP. An example of the scale of the different types of data can be seen in Figure~\ref{fig:methods:multi_scale_tree_det}. The goal of this study is to provide recommendations on how to use data at these three scales to detect trees as accurately as possible and determine whether all three are required. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.3\textwidth]{figs/methods/tree_detection/multiscale_outset.png}
+    \includegraphics[width=0.3\textwidth]{figs/methods/tree_detection/multiscale_inset.png}
+    \includegraphics[width=0.3\textwidth]{figs/methods/tree_detection/multiscale_in_inset.png}
+    \caption{The experimental setup with broad-coveraged aerial data, medimum coverage drone data and a small set of ground truth tree locations. The same data is visualized at three different scales for clarity.}
+    \label{fig:methods:multi_scale_tree_det}
+\end{figure}
+
+The first step in this experiment was processing the drone images into an orthomosaic, as described in the Photogrametry section. This had a resolution of approximately 3 centimeters per pixel. Since the drone has GPS, this orthomosaic is roughly registered to a global reference frame. However, there is some noise and we noticed a slight mis-registration in both scale and translation. We precisely aligned the orthomosaic to our aerial data using QGis \cite{QGIS_software}. This provides an interface to select correspondences between the two datasets. Then, it optimizes a translation and scale transform to best align the two. 
+
+In this work we used DeepForest \cite{Weinstein2020DeepForest:Delineation}, a widely-used deep tree detector based on deep learning.
+The authors state that two parameters, spatial resolution and sliding window size, are especially important when applying DeepForest to new data. In preliminary experiments, we re-sampled the data to a variety of resolutions. We found that performance appeared best around the resolution that the model was trained on, 0.1 meters per pixel. Therefore we resampled both datasets to this resolution. This resulted in downsampling (coarsening) the drone data and upsampling (interpolating) the aerial data. We used the default window size of 400 pixels, which was also the size used for training.
+
+The goal of our experiments is to answer two questions. The first is how valuable are the field reference measurements and drone collects. This would inform whether it is worth collecting these two additional types of data or if they can be safely omitted. The second is how to use all three data products together if they are available.
+
+We propose a set of experiments to explore the these tradeoffs. The baseline approach is applying the pretrained DeepForest model to the aerial data. This requires no field measurements, but is expected to produce low-quality detections because the model was trained on drone data at native resolution, which has significantly more texture. The next approach is using the pretrained version of DeepForest on the drone data. This is expected to be significantly better than the aerial data because it is similar to what the model was trained on. The next two experiments involve fine-tuning the drone and aerial models on the small set of ground truth measurements. We expect that this fine-tuning will have a positive impact on the performance.
 
 \section{Semantic Mapping of Forests}
 The goal of our semantic mapping experiments was to determine what type of vegitation was where in the environment. We had a specific focus on accurately localizing fuel so that an automous ground robot could remove it. To accomplish this, we needed to both provide an accurate map of the world and add additional information to this map about what type of object was at each location.
@@ -153,12 +173,12 @@ Given the limited availability of real data and the labor-intensive nature of la
     \centering
     \includegraphics[width=\textwidth, clip, trim={0 1.5cm 0 1.8cm}]{figs/methods/semantic_mapping/semantic_mapping_overview.pdf}
     \caption{An overview of the LiDAR-camera semantic mapping system}
-    \label{fig:lidar-camera-semantic-mapping}
+    \label{fig:methods:lidar-camera-semantic-mapping}
 \end{figure}
 
-Subsequently, we modified an approach for RGB-D semantic SLAM \cite{semantic_slam} to project the detections from the image to the LiDAR domain (i.e., three-dimensional). First, the image is passed through the semantic segmentation network to get a classification result for each pixel. Using the extrinsics of the LiDAR relative to the camera, we transformed the LiDAR measurements into the camera's coordinate frame. Then, using the calibrated camera intrinsic, we project each LiDAR point into the image plane. Points within the field of view of the camera are assigned a classification label from the corresponding pixel in the semantic map. This semantically-textured point cloud is transformed into the inertial reference frame using the current pose of the drone estimated by our SLAM system. 
+We modified an approach for RGB-D semantic mapping \cite{semantic_slam} to project the segmentations from the image to the LiDAR domain (i.e., three-dimensional). First, the image is passed through the semantic segmentation network to get a classification result for each pixel. Using the extrinsics of the LiDAR relative to the camera, we transformed the LiDAR measurements into the camera's coordinate frame. Then, using the calibrated camera intrinsic, we project each LiDAR point into the image plane. Points within the field of view of the camera are assigned a classification label from the corresponding pixel in the semantic map. This semantically-textured point cloud is transformed into the inertial reference frame using the current pose of the drone estimated by our SLAM system. 
 
-We use an octomap \cite{hornung13auro} representation to efficiently discretize the generated semantic point cloud into voxels. Each voxel has a resolution of 0.05m and contains information about the predicted classification. Each time a new semantic point cloud is created, it is used to update this global octomap. Since each voxel can contain multiple observations, we use two approaches to determine the aggregate classification. The first method assigns the class label using the highest-confidence prediction from the neural network that corresponds to that voxel. Alternatively, we use a Bayesian method which maintains a probability distribution over the classes. Each new observation is multiplied by the current distribution and then re-normalized. The voxel is then labeled with the most probable class.
+We use an octomap \cite{hornung13auro} representation to efficiently discretize the generated semantic point cloud into voxels. Each voxel has a resolution of 0.05m and contains information about the predicted classification. Each time a new semantic point cloud is created, it is used to update this global octomap. Since each voxel can contain multiple observations, we use two approaches to determine the aggregate classification. The first method assigns the class label using the highest-confidence prediction from the neural network that corresponds to that voxel. Alternatively, we use a Bayesian method which maintains a probability distribution over the classes. Each new observation is multiplied by the current distribution and then re-normalized. The voxel is then labeled with the most probable class. An overview of the proposed system can be seen in Figure \ref{fig:methods:lidar-camera-semantic-mapping}.
 
 %\subsection{Adding semantics to meshes}
 %\begin{itemize}
@@ -175,31 +195,6 @@ We use an octomap \cite{hornung13auro} representation to efficiently discretize 
 %
 %\end{itemize}
 
-\section{Tree Detection in Top-Down Data}
-The goal of this work is to study tree detection at multiple scales. We assume that we have data from three sources, low resolution aerial or satellite data, high resolution drone imagery, and the ground truth location and shape for the trees in a small region. The ground truth trees are assumed to be fully within the region the drone surveyed and the drone survey is assumed be be fully within the region with sateillite data. This is a realistic model for a situation where a forester measured the trees in a region and then flew a drone to survey the surrounding area. The remote sensing data could be taken from any relevant available source, such as NAIP. An example of the scale of the different types of data can be seen in Figure~\ref{fig:methods:multi_scale_tree_det}. The goal of this study is to provide recommendations on how to use data at these three scales to detect trees as accurately as possible and determine whether all three are required. 
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.3\textwidth]{figs/methods/tree_detection/multiscale_outset.png}
-    \includegraphics[width=0.3\textwidth]{figs/methods/tree_detection/multiscale_inset.png}
-    \includegraphics[width=0.3\textwidth]{figs/methods/tree_detection/multiscale_in_inset.png}
-    \caption{The experimental setup with broad-coveraged aerial data, medimum coverage drone data and a small set of ground truth tree locations. The same data is visualized at three different scales for clarity.}
-    \label{fig:methods:multi_scale_tree_det}
-\end{figure}
-
-The first step in this experiment was processing the drone images into an orthomosaic, as described in the Photogrametry section. This had a resolution of approximately 3 centimeters per pixel. Since the drone has GPS, this orthomosaic is roughly registered to a global reference frame. However, there is some noise and we noticed a slight mis-registration in both scale and translation. We precisely alligned the orthomosaic to our aerial data using QGis \cite{QGIS_software}. This provides an interface to select correspondences between the two datasets. Then, it optimizes a translation and scale transform to best align the two. 
-
-To detect trees, we chose DeepForest\cite{Weinstein2020DeepForest:Delineation}, which deep learning and was trained on a diverse set of annotations from the National Ecological Observation Network sites \cite{Keller2008ANetwork} across the US. We chose a deep learning approach because it is easy to update fine-tune the algorithm to a new dataset using transfer learning while still retaining some information about a more diverse set of trees.
-We used DeepForest specifically because it is widely used in the literature and provides a well-documented and sophisticated software package. On slight downside to DeepForest is it only predicts axis-aligned bounding boxes, in contrast to a recent approach called DetectTree2 \cite{DetectTree2} that predicts polygonal boundaries. However, this approach provides fewer utilties and was trained on a much smaller set of data, so we determined that the additional complexity was not required in this experiment. 
-
-The authors state that two paramteters, spatial resolution and sliding window size, are especially important when applying DeepForest to new data. In preliminary experiments, we resampled the data to a variety of resolutions. We found that performance appeared best around the resolution that the model was trained on, 0.1 meters per pixel. Therefore we resampled both datasets to this resolution. This resulted in downsampling (coarstening) the drone data and upsampling (interpolating) the aerial data. We used the default window size of 400 pixels, wihch was also the size used for training.
-
-The goal of our experiments is to answer two questions. The first is how valuable are the field reference measurements and drone collects. This would inform whether it is worth collecting these two additional types of data or if they can be safely omitted. The second is how to use all three data products together if they are available.
-
-We propose a set of experiments to explore the these tradeoffs. The baseline approach is applying the pretrained DeepForest model to the aerial data. This requires no field measurements, but is expected to produce low-quality detections because the model was trained on drone data at native resolution, which has significantly more texture. The next approach is using the pretrained version of DeepForest on the drone data. This is expected to be significantly better than the aerial data because it is similar to what the model was trained on. The next two experiments involve fine-tuning the drone and aerial models on the small set of ground truth measurements. The final two experiments involve fine-tuning a model for aerial data on predicted tree locations from the drone data. In one case we used predictions from the pretrained model and in the other case we use predictions from the fine-tuned model. 
-
-To evaluate the of the aerial model, we need a test set that was not within the drone data used in any of the experiments. Unfortunately, we need the drone data to label the ground truth tree locations. Therefore, we conduct this experiment with a two-fold evaluation scheme using the Stowe and Weisner datasets that were collected in the same region of Vermont US. We have the ground truth tree labels and registered aerial data for both.
-In each case, we generate predictions on one location, and if applicable, use the other location for training. We evaluate the performance based on precision and accuracy, with a given IoU threshold used to determine whether a prediction matches a ground truth. We also evaluate the average IoU between predictions and groundtruth.
 
 
 

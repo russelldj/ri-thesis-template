@@ -2,64 +2,55 @@
 
 \chapter{Related Work} \label{chapRelated}
 
-%Unmanned aerial vehicles or drones were initially developed by the millitary. Over the last decade, a variety of companies have begun to offer drones for a variety of domestic applications. This was driven by decreased costs and minuterization of the drone platforms as well as high-performance, low SWaP cameras which have quickly become the most common sensors on small drones. Drones have become increasingly prevalent in agriculture and forestry because of their low cost, ease-of-use, high spatial resolution, and on-demand coverage. 
 
-\section{Automated methods for understanding forest structure}
+\section{Automated Methods for Understanding Forest Structure}
 \subsection{Offline: Photogrametry}
-In general, commodity drones produce only monocular images with potentially a low-accuracy GPS and orientation estimate. A common approach for estimating geometric from this type of data is photogrametry, also known as structure from motion or 3D reconstruction. The origins of photogrametry date back to WWII where it was a manual processed to estimate the geometry of structures from aerial images. Modern automated approaches began todo. Preliminary reconstructions of realistic large-scale scenes began with academic work such as \cite{Agarwal2009}. Over the last decade, numerous commercial and open-source software have been developed to accomplish the task. Some examples include: Agisoft Metashape, COLMAP, OpenMVG, OpenDroneMap.
+In general, commodity drones produce only monocular images with potentially a low-accuracy GPS and orientation estimate. A common approach for estimating geometric from this type of data is photogrametry, also known as structure from motion or 3D reconstruction.  Preliminary reconstructions of realistic large-scale scenes began with academic work such as \cite{Agarwal2009}. Over the last decade, numerous commercial and open sources software have been developed for this task, such as Agisoft Metashape \cite{AgisoftMetashape} and COLMAP \cite{schoenberger2016mvs, schoenberger2016sfm}, respectively.
 
-The details vary by application and assumption, but a common pipline is the following. First, distinctive features are detected in each image. These represent small patches of pixels which are likely to be distinctive, such as corners and edges. Then, features are matched between images, based on the local appearance. 
-Given these correspondences, multiple things can be estimated. The first is the location of these matched points in the 3D space, using triangulation between the cameras. The second is the location of the cameras. Finally, if the camera isn't accurately calibrated, it's common to estimate the parameters which describe how points in the world appear on the image. Given the interplay between all of these elements, it's critical to estimated them together in a global joint optimization. The class of techniques for solving this problem are termed bundle adjustment and are often build on iterative nonlinear least squares. 
+The details vary by application and assumption, but a common pipeline is the following. First, distinctive features are detected in each image. These represent small patches of pixels which are likely to be distinctive, such as corners and edges. Then, features are matched between images, based on the local appearance. 
+Given these correspondences, multiple quantities can be estimated. The first is the location of these matched points in the 3D space, using triangulation between the cameras. The second is the location of the cameras. Finally, if the camera isn't accurately calibrated, it's common to estimate the parameters which describe how points in the world appear on the image. Given the interplay between all of these elements, it's critical to estimated them together in a global joint optimization. The class of techniques for solving this problem are termed bundle adjustment \cite{Triggs2000BundleSynthesis}. After the locations of the cameras have been estimated, it is possible to construct a dense pointcloud or mesh representation of the scene, an example of which can be seen in Figure \ref{fig:background:camera_locations}.
 
-After these quantities are estimated, it's common to re-estimate the correspondences between images using the existing solution as a way to filter incorrect correspondes which are not consisent with the majority of other matches. These steps are often the focus of extensive engineering effort to improve the final performance. 
+Photogrametry has been used in a variety of recent works on understanding forests \cite{Swayze2021InfluenceDensity, doi:10.1139/cjfr-2020-0433}. A notable work in this space is that of Young et. al. \cite{Young2022}. This work studies impacts of different drone fight patterns and Metashape processing parameters on the quality of tree detection in complex coniferous forests. They use extensive experiments to propose a flight pattern and set of parameters that can be used in other tree detection applications.
 
-After this iterative process converges, the result is a sparse output consisting of the camera locations and calibration parameters as well as a sparse set of 3D locations. This sparse representation doesn't capture the full geometry of the scene, since only the most distinctive points are represented. Moreover, because it is a pointcloud, we cannot reason about which parts of the scene would obstuct or "occlude" the view of another one. To accomplish these tasks, we leverage the fact that many solvers can produce a mesh representation of the surface of the scene. A mesh is a common representation in computer vision and graphics, which consists of a set of 3D points connected by triangular faces. 
 
-The process of mesh computation varies by solver. A common first step is to estimate the likely depth to the surface from each camera using color constancy. This means that for a set of posible distances, the observed color from that camera is checked against the color which would be observed by the other camera, if that were the true location of the surface. From this information, a predicted most likely depth surface is predicted for each pixel. Then, the predicted depth is combined across all cameras to produce a consistent 3D geometry. This is often done using a truncated signed distance function representation \cite{} 
+%After these quantities are estimated, it's common to re-estimate the correspondences between images using the existing solution as a way to filter incorrect correspondes which are not consistent with the majority of other matches. These steps are often the focus of extensive engineering effort to improve the final performance. 
+%
+%After this iterative process converges, the result is a sparse output consisting of the camera locations and calibration parameters as well as a sparse set of 3D locations. This sparse representation doesn't capture the full geometry of the scene, since only the most distinctive points are represented. Moreover, because it is a pointcloud, we cannot reason about which parts of the scene would obstuct or "occlude" the view of another one. To accomplish these tasks, we leverage the fact that many solvers can produce a mesh representation of the surface of the scene. A mesh is a common representation in computer vision and graphics, which consists of a set of 3D points connected by triangular faces. 
+%
+%The process of mesh computation varies by solver. A common first step is to estimate the likely depth to the surface from each camera using color constancy. This means that for a set of posible distances, the observed color from that camera is checked against the color which would be observed by the other camera, if that were the true location of the surface. From this information, a predicted most likely depth surface is predicted for each pixel. Then, the predicted depth is combined across all cameras to produce a consistent 3D geometry. This is often done using a truncated signed distance function representation \cite{} 
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth, trim={4cm 3cm 4cm 4cm}, clip]{figs/methods/structure_from_motion/camera estimation.png}
     \caption{An example 3D reconstruction with the camera locations from the drone survey visualized.}
-    \label{fig:camera-locations}
+    \label{fig:background:camera_locations}
 \end{figure}
 
-These solvers are becoming increasingly robust, and are well-suited to reconstructing scenes captured by drone surveys because the same location is often seen across many images.
+%These solvers are becoming increasingly robust, and are well-suited to reconstructing scenes captured by drone surveys because the same location is often seen across many images.
 
-\subsection{Online: Simultaneous localization and mapping}
-Structure from motion is a powerful tool, but a key limitation is that it can only be used to map the environment after a mission is complete. In settings where a drone is operating autonomously in complex environment such as under the canopy, it is important that it understands where it is in relation to obstacles in real time. This problem is challenging because it requires completing two challenging tasks at once: building a map of the world while estimating where the robot is within the map. This problem is known in the robotics literature as simultaneous localization and mapping (SLAM). This refers to the fact that in a new environment, the robot must build a map of the world at the same time as figuring out where it is in this map. 
+\subsection{Online: Simultaneous Localization and Mapping (SLAM)}
+Structure from motion is a powerful tool, but a key limitation is that it can only be used to map the environment after a mission is complete. In settings where a drone is operating autonomously in complex environment such as under the canopy, it is important that it understands where it is in relation to obstacles in real time. This problem is challenging because it requires completing two challenging tasks at once: building a map of the world while estimating where the robot is within the map. This problem is known in the robotics literature as simultaneous localization and mapping (SLAM) \cite{durrant2006simultaneous}. This refers to the fact that in a new environment, the robot must build a map of the world at the same time as figuring out where it is in this map. 
 
-
-Talk about SLOAM \cite{Chen2020SLOAM:Inventory}, a semantic mapping approach specifically for forestry 
-
-%\begin{itemize}
-%    \item Should we include more about survey-based methods?
-%    
-%\end{itemize}
+A variety of generic SLAM approaches have been proposed in recent years, such as LIO-SAM \cite{}, VIL-SLAM \cite{}, and LOAM \cite{}. These approaches are often primarily tested in urban or indoors environments and the work of Garforth et. al. \cite{Garforth2019VisualSLAM} explains some of the attributes that make forests difficult environments for vision-based SLAM. One work that proposes a forest-specific SLAM approach is SLOAM \cite{Chen2020SLOAM:Inventory}. This approach detects tree trunks and uses them as landmarks to increase the localization accuracy and robustness.
 
 
-\section{Automated methods for understanding attributes of forests}
-Given the increasing amount of raw data about our forests, a key question is how to extract meaningful insights. Quantities such as the extent, species composition, health, or biomass of a forest can be more easily used to make management decisions. Automated processing methods can free domain experts from the laborious task of interpreting this data by hand. There has been a steady shift from methods which are hand-designed to those which use supervised machine learning. This means fitting some sort of model to existing data that shows the input information and the correct interpretation. Then this model can be used to generate predictions on new data. Over the last decade there have been an explosion of approaches relying on deep learning \cite{Lecun2015DeepLearning}, which is a subset of machine learning using models that have multiple hiararchical processing steps. This requires dramatically more parameters than previous machine learning models but allows greater flexability and expressivity. This means that less human intuition is required but also means that large quantities of labeled data are expected to achieve good performance. 
+\section{Automated Methods for Understanding Attributes of Forests}
+Given the increasing amount of raw data about our forests, a key question is how to extract meaningful insights. Quantities such as the extent, species composition, health, or biomass of a forest can be more easily used to make management decisions. Automated processing methods can free domain experts from the laborious task of interpreting this data by hand. There has been a steady shift from methods which are hand-designed to those which use supervised machine learning. This means fitting some sort of model to existing data that shows the input information and the correct interpretation. Then this model can be used to generate predictions on new data. Over the last decade there have been an explosion of approaches relying on deep learning \cite{Lecun2015DeepLearning}, which is a subset of machine learning using models that have multiple hiararchical processing steps. This requires dramatically more parameters than previous machine learning models but allows greater flexibility and expressivity. This means that less human intuition is required but also means that large quantities of labeled data are expected to achieve good performance. 
 
 
 \subsection{Detecting Trees from Over-Canopy Data}
-A key first step in many ecological modeling applications is understanding the location and extent of individual trees. Because of this, the problem of detecting trees in drone and satellite has recieved signifcant attention. There are a variety of approaches and one way to classify them is whether they use geometric or visual information about the scene. 
+A key first step in many ecological modeling applications is understanding the location and extent of individual trees. Because of this, the problem of detecting trees in drone and satellite has received significant attention. There are a variety of approaches and one way to classify them is whether they use geometric or visual information about the scene. 
 
-Talk about CHM approaches
+Geometric approaches such as \cite{Popescu2004SeeingHeight} use the height of the canopy as a feature and use a sliding window filter as tree locations. Other works use point clouds derived from LiDAR, such as \cite{Xiao2019MeanData} which provides a through assessment of mean shift applied to tree detection.
 
-We chose to use DeepForest \cite{Weinstein2020DeepForest:Delineation} in this work because it's a commonly-used approach that was trained on a diverse set of trees from the national ecological observation network (NEON) \cite{Keller2008ANetwork} across the country.
-
-Talk about DetectTree2 \cite{DetectTree2} \\
-Go through Derek's paper and find other ones.
+Deep learning approaches are becoming a common method decting trees in visual information, such as orthomosaics derived from drone surveys. DeepForest \cite{Weinstein2020DeepForest:Delineation} is a tree detector model build on RetinaNet \cite{Lin2020FocalDetection} and trained on
+a diverse set of annotations from the National Ecological Observation Network sites
+\cite{Keller2008ANetwork} across the US. This model has been shown to generalize well to a variety of settings and can be further improved by finetuning on a small number of annotations from the local region. Importantly, this model is released in a sophisticated Python package that handles common tasks related to pre-processing, training, inference, and visualizations. One limitation is it only predicts axis-aligned bounding boxes, rather than more detailed representations such as masks. A more recent approach called DetectTree2 \cite{DetectTree2} addresses this limitation by training a Mask-RCNN \cite{He2017MaskR-CNN} model to predict tree boundaries. The limitation of this approach is it was trained on much less data, due to the scarcity of mask annotations, and has less developed software infrastructure.
 
 
 \subsection{Determining Types and Location of Vegitation}
 The end goal of an automated forestry system is often to produce a map of where different classes are. Since the predictions are initially made on each image, an important step is inferring the 3D location of these predictions from the 2D image and also resolving disagreeing predictions for the same location. This challenge has been addressed by many approaches in both geospatial and robotics reserach. A key distinction between approaches in these fields is often whether incremental maps need to be produced as the system is running. In geospatial applicaitons, it's often assumed that the data can be processed in a batch after the mission is completed. In robotics context, the content in the environment often informs the exploration, so the maps must be built in realtime. 
 
-Davila et. al. uses a high-precision GPS-INS to register images \cite{Davila2022ADAPT:AI}
-
-
-\subsection{Understanding What is in Images}
 Semantic segmentation is the task of assigning a classification label to every pixel in an image. In the forestry domain, these classes could be broad, such as trees, shrubs, and grasses or more granular, such as different species of trees. An example image can be seen in Figure \ref{fig:background:semantic_seg_example}.
 
 \begin{figure}
@@ -79,17 +70,13 @@ There are a variety of different approaches to semantic mapping that assume diff
 A common toolbox for generic semantic mapping Kimera \cite{Rosinol2020} that provides many different approaches.
 
 To the best of our knowledge, one of the first works that explores semantic mapping in a forestry context is \cite{Andrada2022IntegrationRoboticsb}. This work also studies identifying forest fire fuel   
-
-\begin{itemize}
-    \item Talk about what we mean by semantic mapping 
-    \item Talk about some generic approaches: UFO map \cite{Duberg2020UFOMap:Unknown}, Kimera 
-    \item Our semantic mapping \cite{RussellUnmannedMitigation} that was derived from \cite{semantic_slam_RGBD}
-    \item Talk about land-use mapping approaches from ecologists \cite{Liu2018DeepClassification} 
-\end{itemize}
+Davila et. al. uses a high-precision GPS-INS to register images \cite{Davila2022ADAPT:AI}
+Talk about land-use mapping approaches from ecologists \cite{Liu2018DeepClassification} 
+Our semantic mapping \cite{RussellUnmannedMitigation} that was derived from \cite{semantic_slam_RGBD}
 
 
 
-\section{Planning informative drone surveys}
+\section{Planning Informative Drone Surveys}
 
 In many forestry applications, the region of interest is commonly substantially larger than what is feasible to survey, either by hand or even with a drone. In practice, foresters  select a small set of plots to visit and extrapolate from these sparse observations to the entire region. These plots are chosen using expert knowledge of the region to be diverse and representative.
 

@@ -1,0 +1,32 @@
+% -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
+
+\chapter{Introduction} \label{secIntro}
+Forests are critical to the function of our planet. 
+
+a critical habitat for biodiversity, sink of carbon, and resource for human development. Understanding the properties of forests such as extent, tree density, height and species is critical for making management decisions. It is increasingly critical to have timely information in light of rapid changes due to climate change, invasive species, fire and direct human pressure.   
+
+Our understanding of forests is driven largely by data at two different spatial scales. The first is high resolution data from  field data, where ecologists or foresters conduct laborious measurements of small hand-selected plots and extrapolate their findings to broader areas. Unfortunately, this approach is time consuming, requires expert knowledge, and doesn't scale to the vast size of forests. The complementary paradigm is using data from satellites and crewed aircraft. This approach scales effectively, since data is available for a large region or even worldwide. The remote sensing community has developed models for a variety of attributes such as biomass, many of which are calibrated with field reference data. Unfortunately, re-annalysis has shown many of the models produce highly inaccurate predictions. Furthermore, due to the low spatial resolution of satellite data, many tasks are fundementally challenging to accomplish.
+
+Over the past decade, there has been an increasing interest in small unmanned aerial systems, "sUAS" or "drones", for forestry applications. Drones carrying cameras have many desirable properties,
+ since they provide data with high spatial resolution, a relatively large spatial region, and are low cost, easy to deploy on demand. 
+ Many of these applications are still in early phases and there has been limited standardization. This is in contrast to agriculture where there has been substantial commercial development of end-to-end drone mapping solutions. The robotics community is beginning to show interest in forestry and several works have focused on applying drones. Howerver, this work relies heavily on sophisticated hardware, where multiple sensors are tightly integrated with on-board compute and controllers. This level of technical complexity puts these systems out of reach of most end-users, who lack specialized robotics knowledge.
+
+This work makes contributions to three topics that advance forest understanding using only commodity hardware. The first is semantic mapping, where we wish to classify different regions of the environment 
+for a specific task. This could related to broad classes such as distinguishing between trees, shrubs, grasses and bare earth or be more fine-grained, such as distinguishing between different tree species.
+This approach is generalized and only requires the user to label a small number of images to define their task. The second contribution is a study of tree detection using data from multiple scales.
+Specifically, we explore how best to accurately predict trees over a large region using remote sensing data, a small plot of field-referenced trees, and an overlapping drone survey. Finally, we propose a 
+generializable algorithm for planning where to execute a sparse set of drone surveys so that these observations can be accurately extrapolated to the whole region using satellite data.
+
+To address semantic mapping, we collect a new dataset using a multi-sensor platform. We compare two approaches, one which is online and uses all the sensors to another which only uses one camera and GPS but requires 
+offline batch processing. The former situation is representative of a robotics application where decisions must be made in real-time and significant complexity is acceptable. This later situation is representative of
+ a commodity drone survey, since these platforms possess these sensors and offline processing is sufficient for mapping.  We find that the offline method
+....hopefully produces maps with higher detail and more a more accurate semantic segmentation.
+
+For tree detection we use an aerial survey that covers the continental US to predict trees at scale. We compare three approaches that leverage DeepForest, an existing deep learning tree detection model
+developed for drone data. In the first setting, we directly apply the model to aerial data. In the second, we fine-tune the model using a small set of trees identified from a field reference survey. In 
+the third, we fine-tune the model for data collected from a drone survey and predict the trees in the remainder of the drone survey region. Then we georeference these predictions to the aerial data and use 
+the full set of predictions to fine-tune model for aerial data.
+ that wasn't manually measured, and then use this larger set of 
+predictions to fine-tune the model for aerial data. 
+
+
