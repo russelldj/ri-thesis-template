@@ -1,30 +1,42 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
 \chapter{Conclusions} \label{chapConclusions}
-\section{Key Takeaways}
-\begin{itemize}
-    \item Structure from motion is a powerful tool to build 3D maps from drone images with minimal assumptions
-    \item A small amount of annotated data can be very useful to train deep learning models for a given natural environment
-    \item Predicting trees at increasingly-low resolutions yields better results 
-\end{itemize}
+\section{Key Takeaways}S
+We find that the structure from motion parameters suggested by Young et. al. \cite{Young2022} work well for reconstructing a number of diverse datasets. The performance is the best when the drone conducts a lawnmower survey above the canopy but manual non-overlapping flight can produce acceptable results. It is more challenging to generate reconstructions from images taken under-canopy, but further research may be able to address this issue.
+
+We compare the performance of tree detection from both drone and remote-sensing data. The detections from drone data are still significantly better than those from NAIP data, even after resampling to the same resolution. 
+
+This work demonstrates an approach to map the location of different types of vegetation using a drone equipped with a camera and LiDAR. We show that recent transformer-based semantic segmentation models are able to achieve moderate performance when trained on very few images from a target region.
+
+We show that unsupervised feature extraction is a powerful tool for land-cover classification from remote sensing data. Specifically, using the approach described in MOSAIKS and compressing these features with PCA yields a compact and informative representation. These features can be used to plan informative drone flights by samples that minimize Gaussian Process uncertainty about the whole region.  
+
+
+%\begin{itemize}
+%    \item Structure from motion is a powerful tool to build 3D maps from drone images with minimal assumptions
+%    \item A small amount of annotated data can be very useful to train deep learning models for a given natural environment
+%    \item Predicting trees at increasingly-low resolutions yields better results 
+%\end{itemize}
 \section{Contributions}
+This work makes two main contributions
 \begin{itemize}
-    \item A study of tree detection in data at multiple scales 
-    \item A novel long-horizon informative path planner for drone surveys
+    \item We present a system for mapping different types of vegetation using multi-senors  SLAM for geometric information and vision-based semantic segmentation to differentiate vegetation classes. This has applications to forest fire mitigation and we believe this is the first system of its kind to address this problem. 
+    \item We propose a novel long-horizon informative path planner that is applicable for planning surveys with commodity drones. We demonstrate that this method is an effective approach for choosing samples for a land-cover classification task.
 \end{itemize}
+
+%\begin{itemize}
+%    \item Adding semantics to meshes 
+%    \item Adding height information to semantics and tree detection images
+%    \item Automatically registering data at different scales using trees as features
+%    \item Evaluating the performance of different feature extractors
+%\end{itemize}
+        
+\section{Proposed Concluding Experiments}
+There are several additional experiments that we anticipate completing before the conclusion of this thesis.
+For tree detection, it is clear that we need a quantitative assessment to better understand the tradeoffs between these different approaches.We plan to conduct a two-fold evaluation scheme by repeating the same steps we did on \textit{Stowe} on another dataset we collected in the same region. Then, we will evaluate the predictions from approaches trained on one location on the other, and vice versa, to get an accurate assessment of the ability of these approaches to generalize. We also propose to add two more experiments to the existing ones. These involve fine-tuning a model for aerial data on predicted tree locations from the drone data. In one case we used predictions from the pretrained model and in the other case we use predictions from the fine-tuned model. We hypothesize that this multi-stage approach will increase performance because of the increased diversity of training examples.  
+
+We also would like to more thoroughly evaluate the sensitivity of RAPTORS to different parameter choices. We will first begin by assessing the impact of different parameters on the feature extraction side and different machine learning models for land cover predictions. Once we have settled on a desirable combination, we will run system-level experiments on the RAPTORS algorithm. Since these experiments are relatively computationally intensive, we will explore a number of parameters at once using randomized sampling. We will also test the algorithm on data from more diverse geographic regions.
+
 \section{Future work}
-\begin{itemize}
-    \item Adding semantics to meshes 
-    \item Studying tree detection with more rigorous ground truth data
-    \item Adding height information to semantics and tree detection images
-    \item Explore different approaches to dimensionality reduction, such as VAE
-    \item Automatically registering data at different scales using trees as features
-    \item Evaluating the performance of different feature extractors
-\end{itemize}
-
-Experiments on this topic are ongoing. We propose to add two more experiments to this list. These involve fine-tuning a model for aerial data on predicted tree locations from the drone data. In one case we used predictions from the pretrained model and in the other case we use predictions from the fine-tuned model. We hypothesis that this multi-stage approach will increase performance because of the increased diversity of training examples.  
-
-Quantitative evaluation is also ongoing. To get an realistic assessment of the quality, we need a test set that was not within the drone data used in any of the experiments. Unfortunately, we need the drone data to label the ground truth tree locations. Therefore, we plan conduct this experiment with a two-fold evaluation scheme using the Stowe and Weisner datasets that were collected in the same region of Vermont US. This will require registering 
-In each case, we generate predictions on one location, and if applicable, use the other location for training. We evaluate the performance based on precision and accuracy, with a given IoU threshold used to determine whether a prediction matches a ground truth. We also evaluate the average IoU between predictions and groundtruth.
+In this work, we have demonstrated an online semantic mapping system that uses a custom multi-sensor payload. We are interested in extending this approach to commodity drones by using only GPS-tagged images as input to further increase the accessibility of this approach. Fortunately, this work and others demonstrates the ability of structure from motion to predict the geometry of forests from images alone. Therefore, semantic meshes \cite{} appear to be a promising approach, since they aggregate single-view semantic segmentation predictions onto the geometry of a mesh. As an additional improvement, geometric data from the meshes could be used to augment the visual data for semantic segmentation. For example, the height of the mesh corresponding to each pixel on the image could be computed using rendering techniques. Then this data could be concatenated with the visual imagery to provide a richer representation. This could help address ambiguities that are challenging to address from visual cues alone, such as the similarity between canopy and fuel at ground level.  
 
 

@@ -2,12 +2,12 @@
 \section{Datasets}
 In this work we use data from a variety of sources. The first is from small, consumer-grade drones that capture only GPS-tagged images. This is relatively easy to collect and representative of what is commonly available in forestry. The second type of data is from a custom drone payload that records data from multiple sensors at once. To the best of our knowledge, this is one of the first instances of collecting data with all of these sensors. The third type of data is existing data from remote sensing, specifically an aerial mapping survey. This data is freely available. Finally, we use annotated forestry data that was captured below-canopy. We uses this as training data for our system.
 
-\subsection{Commodity drone data}
+\subsection{Commodity Drone Data}
 
-In this work we use data collected with a Mavic Air 2s.
 
-%In this work, we use several sources of commodity-level drone data. The first is actually collected with our more sophisticated drone. In these experiments, we only use the images from one camera and geo-tag them with our payload GPS. This is a reasonable analog for commodity drone data, since our camera and GPS are comparable to what would be found on a small commodity platform. 
+In this work, we use several sources of commodity-level drone data. The first is actually collected with our more sophisticated drone. In these experiments, we only use the images from one camera and geo-tag them with our payload GPS. This is a reasonable analog for commodity drone data, since our camera and GPS are comparable to what would be found on a small commodity platform. 
 
+The second set of data we use in this work collected with a Mavic Air 2s, a small commodity drone. The drone was flown in a lawnmower pattern at 100 meters in Vermont. Data was taken in two separate locations. 
 %The second source of data is taken from a study of structurally-complex western conifer forests \cite{Young2023}. This data was collected with a DJI Mavic in a lawnmower pattern at an altitude of 120 meters.
 
 \subsection{Multi-Sensors Drone Data}
@@ -41,10 +41,10 @@ Gascola & \makecell{Pittsburgh,\\ PA USA} & \makecell{Multi-sensor \\ payload}  
 \hline
 Wharton & \makecell{Hammonton,\\ NJ USA} & \makecell{Multi-sensor \\ payload}  & \makecell{Forest with road} & \makecell{Manual oval \\ over canopy\\ (60)} \\
 \hline
-Stowe\{1,2\} & \makecell{Stowe,\\ VT USA} & \makecell{DJI Air 2s} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
+Stowe & \makecell{Stowe,\\ VT USA} & \makecell{DJI Air 2s} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
 \hline
-Emerald \cite{Young2022} & \makecell{Lake Tahoe,\\ CA USA} & \makecell{DJI Mavic 2} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
-\hline
+%Emerald \cite{Young2022} & \makecell{Lake Tahoe,\\ CA USA} & \makecell{DJI Mavic 2} & \makecell{Forest} & \makecell{Lawnmower (90)} \\ 
+%\hline
 \end{tabular}
 \caption{A summary of drone datasets used in this work.}
 \end{table}
@@ -75,6 +75,8 @@ Sete Fonte & \makecell{Coimbra,\\ Portugal} & \makecell{Under-canopy \\ images} 
 Synthetic \cite{nunes2021procedural} & \makecell{N/A, simulated} & \makecell{Under-canopy \\ images} & \makecell{Forest} \\ 
 \hline
 NAIP & \makecell{Continental US} & \makecell{Aerial imagery} & \makecell{Varied} \\ 
+\hline
+ Chesapeake LULC \cite{Claggett2014ChesapeakeProduction, Robinson2019LargeData} & \makecell{Chesapeake Bay,\\ US} & \makecell{Annotated \\ Land Use/\\Land Cover\\ classification} & \makecell{Varied} \\ 
 \hline
 \end{tabular}
 \caption{A summary of non-drone datasets used in this work}
@@ -246,11 +248,10 @@ Now that we have a strong feature representation, we begin to think about how to
 \subsection{Long Horizon Informative Path Planning}
 Now that we have addressed feature extraction and uncertainty modeling, we need an algorithm to plan a path that can effectively reduce the uncertainty. We make two observations that inform this work. First, drones can move in any direction and since we are flying above canopy, there are assumed to be no obstacles. Moreover, the drone has to stop down to execute each survey, so kinematic considerations are effectively removed. Given the scale of distances between points and drone's rapid acceleration, the time to traverse between points is assumed to be proportional to the distance between them.  
 
-We employ a sampling-based strategy to build a long-horizon map, with the goal of decreasing the uncertainty about the entire region. This work is related to RIG-Tree \cite{Hollinger2014Sampling-basedAlgorithms}, but is simpler, considers areas measuremnts at the vertices of traversals rather than edges, and directly optimizes for a path that returns to home under the alloted budget.
+%We employ a sampling-based strategy to build a long-horizon map, with the goal of decreasing the uncertainty about the entire region. This work is related to RIG-Tree \cite{Hollinger2014Sampling-basedAlgorithms}, but is simpler, considers areas measurements at the vertices of traversals rather than edges, and directly optimizes for a path that returns to home under the alloted budget.
 
-The algorithm begins 
 
-We employ a sampling-based strategy to build a long horizon offline path. This takes in an initial location, a number of samples, and a traversal budget. The algorithm begins by computing the gaussian process uncertainty after only observing the first location. Then, a feasible region is computed using a fraction of the remaining budget. A fixed number of samples are drawn from this feasible region, using a weighted sampling based on their uncertainty. The sample which reduces the total map unceratinty the most is added to the plan. Then the points are ordered using a TSP solver. The feasible region is recomputed using the added points and the fraction of the remaining budget.
+We employ a sampling-based strategy to build a long horizon offline path. This takes in an initial location, a number of samples, and a traversal budget. The algorithm begins by computing the Gaussian Process uncertainty after only observing the first location. Then, a feasible region is computed using a fraction of the remaining budget. A fixed number of samples are drawn from this feasible region, using a weighted sampling based on their uncertainty. The sample which reduces the total map uncertainty the most is added to the plan. Then the points are ordered using a TSP solver. The feasible region is recomputed using the added points and the fraction of the remaining budget.
 
 \begin{figure}
     \centering
@@ -260,51 +261,51 @@ We employ a sampling-based strategy to build a long horizon offline path. This t
     \label{fig:methods:IPP_raptors_overview}
 \end{figure}
 
-\begin{algorithm}
-\caption{RAPTORS}\label{alg:methods:RAPTORS}
-\begin{algorithmic}
-\State $F = extract\_features(I)$
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-\caption{extract\_features}\label{alg:methods:extract_features}
-\begin{algorithmic}
-\State $F = extract\_features(I)$
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-\caption{choose\_next\_sample}\label{alg:methods:choose_next_sample}
-\begin{algorithmic}
-\State $F = extract\_features(I)$
-\end{algorithmic}
-\end{algorithm}
+%\begin{algorithm}
+%\caption{RAPTORS}\label{alg:methods:RAPTORS}
+%\begin{algorithmic}
+%\State $F = extract\_features(I)$
+%\end{algorithmic}
+%\end{algorithm}
+%
+%\begin{algorithm}
+%\caption{extract\_features}\label{alg:methods:extract_features}
+%\begin{algorithmic}
+%\State $F = extract\_features(I)$
+%\end{algorithmic}
+%\end{algorithm}
+%
+%\begin{algorithm}
+%\caption{choose\_next\_sample}\label{alg:methods:choose_next_sample}
+%\begin{algorithmic}
+%\State $F = extract\_features(I)$
+%\end{algorithmic}
+%\end{algorithm}
 
 
 
 
 \subsection{Experimental Setting}
-The goal of this experiment is to simulate a land cover mapping mission for a region that is too large for the drone to exhaustively survey. Remote sensing data is available beforehand and is used to both inform the mission and generate predictions on the unobserved regions. In this experiment, we use NAIP \cite{} data 
+The goal of this experiment is to simulate a land cover mapping mission for a region that is too large for the drone to exhaustively survey. Remote sensing data is available beforehand and is used to both inform the mission and generate predictions on the unobserved regions. In this experiment, we use NAIP data and manual land cover classification annotations from the Chesapeake Bay \cite{Claggett2014ChesapeakeProduction}.
 
 %The goal of the experiments is to model a realistic data collection scenario. The data is collected over a series of missions, where each mission must be fully planned before it is executed. Each mission is allowed a pathlength budget and a number of samples it is allowed to collection. 
 
-%In our experiments we use randomly-sampled NAIP tiles to evaluate the approach. In each situation the agent starts in the center of the environment and must return there after each mission.
+In our experiments we use randomly-sampled NAIP tiles to evaluate the approach. In each situation the agent starts in the center of the environment and must return there after each mission.
 
-%In these experiments we use a very simple prediction system to predict the class of unobserved pixels. It is simply a nearest-neighbor classifier which operates on the same PCA-compressed MOSAIKS features that are used for planning. While simple, this approach is well-suited to the extremely low number of training samples used in this setting and the standardized and uncorrelated nature of our feature space.
+In these experiments we use a very simple prediction system to predict the class of unobserved pixels. It is simply a nearest-neighbor classifier which operates on the same PCA-compressed MOSAIKS features that are used for planning. While simple, this approach is well-suited to the extremely low number of training samples used in this setting and the standardized and uncorrelated nature of our feature space.
 
-%Before any missions have been executed, the agent can only observe the label of the pixel it is at. Then it plans a mission and executes it, observing the labels at the chosen sampling locations. These samples are used to train a prediction model which is used for evaluation and, in theory, could be used to inform the plan for the next mission. 
+Before any missions have been executed, the agent can only observe the label of the pixel it is at. Then it plans a mission and executes it, observing the labels at the chosen sampling locations. These samples are used to train a prediction model which is used for evaluation and, in theory, could be used to inform the plan for the next mission. 
 
 
-%The experiments were conducted over ten random domains, which each represented an 800x800px crop from the Chesapeake Bay land cover dataset. Each tile represents approximately half a kilometer square. The pathlength was set as 800 pixels as well, which meant that the agent could go to one side of the environment and return to the start within the budget but some corners were completely unreachable. Each domain was explored using four missions where 10 samples could be collected during each one. Each sample meant the agent could observe the class of one pixel. After each mission, the class of all pixels  were predicted using the nearest neighbor classifier and the error metrics were computed. 
+The experiments were conducted over ten random domains, which each represented an 800x800px crop from the Chesapeake Bay land cover dataset. Each tile represents approximately half a kilometer square. The pathlength was set as 800 pixels as well, which meant that the agent could go to one side of the environment and return to the start within the budget but some corners were completely unreachable. Each domain was explored using four missions where 10 samples could be collected during each one. Each sample meant the agent could observe the class of one pixel. After each mission, the class of all pixels  were predicted using the nearest neighbor classifier and the error metrics were computed. 
 
 
 \subsection{Metrics}
 The quality of the predictions are evaluated on two metrics, accuracy and averaged recall. The first is simply the fraction of pixels in the map that were assigned the correct class label by the prediction system. The second represents the average of the per class recalls. This metric is chosen so that rare classes are treated equally in the evaluation procedure, since this is critically important when we explicitly want to find rare classes. We also report the time taken to generate the plan. Note that this does not include the time taken to generate the class predictions, since the planner is agnostic to the choice of prediction algorithm.
 
  
- \begin{itemize}
-     \item Talk about this in far more detail
-     \item Add some more figures to describe the process
-     \item Finish algorithm descriptions
- \end{itemize}
+% \begin{itemize}
+%     \item Talk about this in far more detail
+%     \item Add some more figures to describe the process
+%     \item Finish algorithm descriptions
+% \end{itemize}

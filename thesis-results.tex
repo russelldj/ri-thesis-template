@@ -70,6 +70,23 @@ The predictions on drone data appear significantly better than those from the NA
     \label{fig:results:tree_det}
 \end{figure}
 
+\begin{table}[]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        \textbf{experiment} & \textbf{recall} & \textbf{precision} & \textbf{IoU} \\
+        \hline \hline
+        base ortho & 0.614 & 0.676 & 0.417\\ \hline 
+        finetuned ortho & 0.638 & 0.696 & 0.442\\ \hline 
+        base RS & 0.121 & 0.109 & 0.198\\ \hline 
+        finetune RS & 0.294 & 0.331 & 0.250\\ \hline 
+        finetune RS on ortho base & 0.163 & 0.153 & 0.207\\ \hline 
+        finetune RS on ortho finetuned & 0.216 & 0.214 & 0.230\\ \hline 
+     \end{tabular}
+    \caption{Tree detection results using multiple experimental strategies}
+    \label{tab:results:tree_det}
+\end{table}
+
 
 
 \section{Semantic Mapping for Vegetation Classification}
