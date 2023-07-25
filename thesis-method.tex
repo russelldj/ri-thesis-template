@@ -17,8 +17,8 @@ Many modern approaches to simultaneous localization (SLAM) and semantic mapping 
     \centering
     \includegraphics[width=0.55\textwidth]{figs/methods/datasets/payload_annotated.pdf}
     \hfill
-    \includegraphics[width=0.37\textwidth]{figs/methods/datasets/payload_on_drone.jpeg}
-    \caption{The multi-sensor payload designed by our collaborators. This was used for collecting rich forestry drone data. Photo credit to Winnie Kuang.}
+    \includegraphics[width=0.37\textwidth, clip=true, trim={0cm 16cm 0cm 40cm}]{figs/methods/datasets/payload_on_drone_portugal_3.jpg}
+    \caption{On the left is the multi-sensor payload developed by other members of out team. It consists of a LiDAR, stereo RGB camera pair, a multi spectral camera, an IMU and a GPS. It has onboard compute and storage. We used this platform onboard a DJI Matrice 600, pictured right. Photo credits to Winnie Kuang.}
     \label{fig:methods:payload}
 \end{figure}
 
@@ -115,7 +115,7 @@ NAIP & \makecell{Continental US} & \makecell{Aerial imagery} & \makecell{Varied}
 %            └── per_collect # Structured like level_00
 %\end{verbatim}
 
-\section{Geometric understanding of forests using drone data}
+\section{Geometric Understanding of Forests using Drone Data}
 \subsection{Photogrametry}
 Data from commodity drones is very easy to use with structure from motion, since it is often provided as folder of images, with GPS information embedded in the EXIF metadata. This GPS information is not require, but provides a very helpful initialization to the structure from motion process. Furthermore, commodity drones are often set to only capture data at a low frequency or after traveling a given distance, to manage limited storage. Therefore, it is often advantageous to use all the available images. However, with our custom payload, the data was captured at a high frequncy of 10 HZ so consecutive images were often highly redundant. As shown by Young et. al. \cite{Young2022}, highly redundant images contribute little to the overall quality but we found them to dramatically increase computation times. Therefore, we the drone we downampled the image to 2HZ. If we had GPS data available, we tagged each image with the GPS coordinate from the temporally-nearest GPS record.   
 

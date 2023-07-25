@@ -72,16 +72,16 @@ The predictions on drone data appear significantly better than those from the NA
 
 \begin{table}[]
     \centering
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|l|l|l|l|l|}
         \hline
-        \textbf{experiment} & \textbf{recall} & \textbf{precision} & \textbf{IoU} \\
+        \textbf{Required data} & \textbf{Experiment} & \textbf{Recall} & \textbf{Precision} & \textbf{IoU} \\
         \hline \hline
-        base ortho & 0.614 & 0.676 & 0.417\\ \hline 
-        finetuned ortho & 0.638 & 0.696 & 0.442\\ \hline 
-        base RS & 0.121 & 0.109 & 0.198\\ \hline 
-        finetune RS & 0.294 & 0.331 & 0.250\\ \hline 
-        finetune RS on ortho base & 0.163 & 0.153 & 0.207\\ \hline 
-        finetune RS on ortho finetuned & 0.216 & 0.214 & 0.230\\ \hline 
+        drone &  ortho pretrained & 0.614 & 0.676 & 0.417\\ \hline 
+        field + drone &  ortho finetuned & 0.638 & 0.696 & 0.442\\ \hline 
+        NAIP &  NAIP pretrained & 0.121 & 0.109 & 0.198\\ \hline 
+        field + NAIP &  NAIP finetuned & 0.294 & 0.331 & 0.250\\ \hline 
+        drone + NAIP & NAIP finetuned on pretrained ortho  & 0.163 & 0.153 & 0.207\\ \hline 
+        field + drone + NAIP &  NAIP finetuned on finetuned ortho & 0.216 & 0.214 & 0.230\\ \hline 
      \end{tabular}
     \caption{Tree detection results using multiple experimental strategies}
     \label{tab:results:tree_det}
