@@ -1,12 +1,11 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
 \chapter{Introduction} \label{chapIntroduction}
-\section{Motivation}
-
 Forests impact many aspects of our life on earth, ranging from the composition of the atmosphere, purification of water, moderating local temperature, and contributing to fire risk \cite{IPCC2019ClimateReport}. Unfortunately, they are under threat from a variety of factors including climate change, invasive species, fire, and direct human pressures. This is causing forests to change at an unprecedented rate. In light of these rapid changes, it is critical that we have up-to-date information to inform decisions such as habitat preservation, sustainable timber operations, forest fire mitigation, and carbon sequestration. In this work we specifically study aspects of forest fire mitigation and carbon sequestration, though the approaches aim to be generic enough to scale to other applications. 
 
-
+There are many sources of data that can be used to inform forest management. In this work we study three: manual field measurements, data from drones, and remote sensing imagery. The manual measurements are accurate and granular, but fail to provide information at scale. Conversely, remote sensing data can provide information at scale, but lacks fine-grained spatial detail and is challenging to interpret. Drone data strikes a middle ground between these extremes. The goal of this work is to develop techniques that leverage all three sources of data to produce insights about forests that are both accurate and scalable.
 \section{Research Questions}
+Our broad goal of multi-modality forest understanding motivates three specific areas of study:
 \begin{itemize}
     \item How can data from field surveys, drones, and remote sensing be integrated to accurately detect trees at scale?
 \end{itemize}
@@ -17,6 +16,8 @@ Forests impact many aspects of our life on earth, ranging from the composition o
     \item How can sparse drone surveys be planned to provide the most diverse and informative measurements about a region?
 \end{itemize}
 
+%\section{Methods}
+%\section{Conclusions}
 %Most traditional cameras only capture three different bands of light, red, green and blue. In contrast, many space-borne sensors capture more spectral bands and are termed either multi- or hyper-spectral. Multispectral data has coarse bands with gaps between them, while hyperspectral data has many small bands which observe a near-continuous spectral signal \cite{Lu2019ComparingProperties}. These sensors vary widely in spatial resolution with legacy government satellites such as Landsat 8 and Sentinel 2 having resolutions of multiple meters per pixel. More recent commercial offerings have pushed the resolution to the sub-meter range. 
 
 
