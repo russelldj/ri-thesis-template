@@ -47,7 +47,61 @@ We conduct this comparison on the \textit{Gascola} dataset that was surveyed wit
 As shown in Figure \ref{fig:results:slam_photogrametry_comparison}, the two maps agree fairly well in most regions. A notable source of high error is the tops of trees. In general, our qualitative assessment suggested that the SLAM approach was better at capturing these fine details compared to photogrammetry. This is because it had the benefit of explicit 3D data from LiDAR, while the photogrammetry approach had to infer 3D information from images. This often leads to sharp points and fine detail being lost. This shows that in offline applications of over-canopy mapping, photogrammetry is likely sufficient. 
 
 \section{Tree Detection using Data at Multiple Scales}
-We propose a set of experiments to explore different approaches to using multiple types of data. The baseline approach is applying the pre-trained DeepForest model to the aerial data. This requires no field measurements but is expected to produce low-quality detections because the model was trained on drone data at native resolution, which has significantly more texture. The next approach is using the pre-trained version of DeepForest on the drone data. This is expected to be significantly better than the aerial data because it is similar to what the model was trained on. The next two experiments involve fine-tuning the drone and aerial models on the small set of ground truth measurements. We expect that this fine-tuning will have a positive impact on the performance. Finally, we train a model for remote sensing data on the predictions from the drone. Even though these predictions are less accurate than manual labels, there are more of them, so this may improve performance.
+The goal of these experiments is to provide insight into the performance of DeepForest in different settings, with the eventual goal of informing what data would be sufficient for useful tree detection.
+
+The first aspect we explore is the influence of the image resolution that is provided to the detection network. The authors of DeepForest state that this parameter is important, but to the best of our knowledge do not provide any experimental analysis of its impact. The first situation this is useful in is when high-resolution data is available. Then, these experiments can inform what resolution to downsample to for best performance. The second is when planning drone data collection or conducting post-processing. As long as the resolution is suitable for photogrammetry, there is no reason to collect data that is higher resolution than is needed for network inference. Similarly, there is no reason to export an orthomosaic that is higher resolution than needed, since this can often result in very large images. 
+
+
+
+To study this phenomenon, we use data from both the drone orthomosaic and NAIP. For each type of data, we conducted experiments with both the DeepForest model trained on NEON data, termed \textit{pretrained} and a model that was finetuned on one half of the data from the site, termed \textit{finetuned}. In both experiments, we trained the network for 50 epochs using the default settings of the Adam \cite{} optimizer provided by DeepForest. The confidence threshold at inference was set to 0.3, which is also the recommended default. The predictions are evaluated on the test set, which is spatially distinct from the training set. The experiment is repeated with 2-fold validation, using one half as the training set and other half as the test set. To provide increased confidence in the results, each configuration is repeated three times. These six trials are repeated for 20 different inference resolutions sampled logarithmically from 0.01 to 0.7 meters per pixel. In the \textit{finetuned} experiments, the training resolution is the same as the inference resolution.
+
+A common metric to assess the quality of a detection prediction is intersection over union (IoU). This is the ratio of the area of the overlap between the prediction and groundtruth to the total area covered by both. One metric we use to assess the quality of the predictions is the mean intersection over union (mIoU), which is the IoU with the closest groundtruth tree, averaged over all predictions. We also compute precision and recall. 
+The authors of DeepForest state that a predicted tree with an intersection-over-union (IoU) of 0.4 with a groundtruth tree, is useful for ecological applications. A true positive \textit{TP} is when a predicted tree has sufficient overlap with a ground truth. A false positive \textit{FP} is a spurious detection when a tree is predicted but does not have sufficient overlap with any ground truth tree. Finally, a false negative \textit{FN} is a missed detection where no prediction overlaps with a given ground truth tree. Precision represents the fraction of predictions that match a ground truth and recall represents the fraction of groundtruth trees that are matched by a prediction. These equations are summarized below:
+
+\begin{align*}
+\textrm{Precision} &= \frac{\textrm{TP}}{\textrm{TP}+\textrm{FP}}\\
+\textrm{Recall} &= \frac{\textrm{TP}}{\textrm{TP}+\textrm{FN}}
+\end{align*}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\textwidth]{figs/results/tree_detections/drone_metrics.pdf}
+    \includegraphics[width=0.45\textwidth]{figs/results/tree_detections/NAIP_metrics.pdf}
+    \caption{Tree detection metrics for drone data and NAIP versus inference resolution.}
+    \label{fig:results:inference_resolution}
+\end{figure}
+
+The results of these experiments are presented in Figure \ref{fig:results:inference_resolution}. The pretrained model on the drone data exhibits consistent performance across all metrics between 0.01 and 0.1 meters per pixel. As the resolution becomes coarser than 0.1 meters, the performance quickly deteriorates. With the finetuned model, performance remains much more consistent across resolutions from 0.01 to 0.7 meters per pixel. This suggests that low-resolution data is too far out of distribution for the pretrained network, but the finetuning allows it to still perform well even on data that is different from what was seen during the NEON training. The NAIP data shows a different trend. For both the pretrained and finetuned models, the performance is consistent but low for all resolutions. The exception is for the pretrained model, the mIoU drops, and the precision increases for the coarsest data.
+
+Because of the poor performance of NAIP data, we wanted to explore other options for remote sensing data. Because it is challenging to obtain higher-quality, commercial remote sensing data, we instead chose to simulate varying resolutions of data by downsampling the orthomosaic to simulate lower-resolution remote sensing products. This has the added benefit of removing confounding effects from different data products and focusing solely on resolution. Given our previous experiments, we chose to perform inference at a resolution of 0.1 meters per pixel. Therefore, we simulated data that was lower resolution than this threshold by downsampling the orthomosaic to resolutions between 0.1 and 1 meters per pixel, sampled logarithmically. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{figs/results/tree_detections/simulated_RS_metrics.pdf}
+    \caption{Performance of tree detection with downsampled drone data, used to simulate remote sensing data of different resolutions.}
+    \label{fig:results:downsampled_tree_det_resolution}
+\end{figure}
+
+The results of this experiment are presented in Figure \ref{fig:results:downsampled_tree_det_resolution}. For an input resolution of 0.1 meters per pixel, the performance of the pretrained and finetuned models are similar. As the resolution decreases, the performance of the pretrained model drops dramatically. At approximately 0.3 meters per pixel, the performance of the pretrained model begins to decrease less rapidly. In contrast, the performance of the finetuned model only decreases slightly as the resolution drops. At a resolution of 0.6, the performance of the downsampled orthomosaic is still significantly better than that of the NAIP data. This suggests that despite the comparable resolution, something about the orthomosaic is more suitable for tree detection with DeepForest. One potential explaination is the difference in colors between the two types of data.
+
+Finally, we propose  propose a set of experiments to explore different approaches to using multiple types of data. The baseline approach is applying the pre-trained DeepForest model to the aerial data. This requires no field measurements but is expected to produce low-quality detections because the model was trained on drone data at native resolution, which has significantly more texture. The next approach is using the pre-trained version of DeepForest on the drone data. This is expected to be significantly better than the aerial data because it is similar to what the model was trained on. The next two experiments involve fine-tuning the drone and aerial models on the small set of ground truth measurements. We expect that this fine-tuning will have a positive impact on the performance. Finally, we train a model for remote sensing data on the predictions from the drone. Even though these predictions are less accurate than manual labels, there are more of them, so this may improve performance.
+
+In all experiments, the training and inference resolutions are 0.1 meters.
+
+\begin{itemize}
+    \item \textbf{Pretrained ortho} This is applying the DeepForest model trained on NEON data to the drone orthomosaic. To deploy this approach, only drone data is needed.
+    \item \textbf{Finetuned ortho} This is fine-tuning the DeepForest model trained on NEON data with a small amount of site-specific data. This requires both drone data and labels from field work or manual annotations.
+    \item \textbf{Pretrained NAIP} This is applying the DeepForest model trained on NEON data to NAIP. This requires only NAIP data.
+    \item \textbf{Finetuned NAIP} This is fine-tuning the DeepForest model pretrained on NEON data with a small ammount of site-specific data. Similar to \textit{finetuned ortho}, this requires two types of data, NAIP and a small ammount of tree labels.
+    \item \textbf{Finetuned NAIP on predictions from pretrained ortho (Finetuned NAIP[pretrained])} 
+    This a model for NAIP data. Instead of finetuning this model on labels taken from field work or manual annotations, this model is finetuned using trees predicted by the \textit{pretrained ortho} model using drone data. This experiment does not require labeled data and only needs drone and NAIP data. The hypothesis is that the increased number of training samples can compensate for the decreased quality obtained by training on automated predictions.
+    \item \textbf{Finetuned NAIP on predictions from finetuned ortho (Finetuned NAIP[finetuned])}
+    This is also a model for NAIP data. Similar to the previous experiment, the model for NAIP is finetuned using predictions on drone data. In this case, the predictions are generated using the \textit{finetuned ortho} model. This means that all three types of data are required: labeled data, drone data, and NAIP.
+    \item \textbf{Finetuned downsampled ortho on predictions from pretrained ortho (Finetuned DS ortho[pretrained])}
+    To simulate remote sensing data that is more useful for tree detection than NAIP, we downsample the orthomosaic to 0.6 meters per pixel. Then we conduct the same experiment as \textit{finetuned NAIP[pretrained]}.
+    \item \textbf{Finetuned downsampled ortho on predictions from finetuned ortho (Finetuned DS ortho[finetuned])} This experiment is also conducted with a downsampled orthomosaic used to simulate remote sensing data. Otherwise, it is the same as \textit{finetuned NAIP[finetuned]}.
+    
+\end{itemize}
 
 In this experiment we generate predictions on two different modalities from the same \textit{Stowe} cite. The first is an orthomosaic derived from the drone and the second is NAIP imagery derived from aerial data. These predictions are shown in Figure \ref{fig:results:tree_det}. The predictions on drone data appear significantly better than those from the NAIP data. This is unsurprising because of the increased detail provided by the higher-resolution data. What is somewhat surprising is that fine-tuning the model did not appear to improve performance significantly. This suggests that the pretrained model already is already well-suited to this data, especially after appropriately matching the training resolution.
 
@@ -55,18 +109,21 @@ In Table \ref{tab:results:tree_det} we show the quantitative evaluation of the d
 
 \begin{table}[]
     \centering
-    \begin{tabular}{|l|l|l|l|l|}
+    \begin{tabular}{|l|l|l|l|}
         \hline
-        \textbf{Required data} & \textbf{Experiment} & \textbf{Recall} & \textbf{Precision} & \textbf{mIoU}\\
+        \textbf{Experiment} & \textbf{Recall} & \textbf{Precision} & \textbf{mIoU}\\
         \hline
-        drone & Base ortho & 0.614 \pm 0.000 & 0.601 \pm 0.076 & 0.424 \pm 0.007\\ \hline 
-        field + drone & Finetuned ortho & 0.608 \pm 0.012 & 0.617 \pm 0.070 & 0.432 \pm 0.009\\ \hline 
-        NAIP & Base RS & 0.125 \pm 0.004 & 0.100 \pm 0.009 & 0.202 \pm 0.004\\ \hline 
-        field + NAIP & Finetune RS & 0.282 \pm 0.004 & 0.221 \pm 0.032 & 0.271 \pm 0.017\\ \hline 
-        drone + NAIP & Finetune RS on ortho base & 0.336 \pm 0.040 & 0.288 \pm 0.006 & 0.282 \pm 0.024\\ \hline 
-        field + drone + NAIP & Finetune RS on ortho finetuned & 0.305 \pm 0.053 & 0.331 \pm 0.018 & 0.250 \pm 0.036\\ \hline 
-\hline 
-     \end{tabular}
+        Base ortho                           & $0.614 \pm 0.000$ & $0.601 \pm 0.076$ & $0.424 \pm 0.007$ \\ \hline 
+        Finetuned ortho                      & $\mathbf{0.620} \pm 0.026$ & $\mathbf{0.608} \pm 0.079$ & $0.440 \pm 0.021$ \\ \hline 
+        Base NAIP                            & $0.125 \pm 0.004$ & $0.100 \pm 0.009$ & $0.202 \pm 0.004$ \\ \hline 
+        Finetune NAIP                        & $0.292 \pm 0.030$ & $0.242 \pm 0.017$ & $0.261 \pm 0.018$ \\ \hline 
+        Finetune NAIP on ortho base          & $0.326 \pm 0.052$ & $0.289 \pm 0.034$ & $0.279 \pm 0.026$ \\ \hline 
+        Finetune NAIP on ortho finetuned     & $0.319 \pm 0.051$ & $0.316 \pm 0.025$ & $0.262 \pm 0.029$ \\ \hline 
+        Base DS ortho                        & $0.303 \pm 0.010$ & $0.231 \pm 0.033$ & $0.266 \pm 0.014$ \\ \hline 
+        Finetune DS ortho                    & $0.576 \pm 0.034$ & $0.563 \pm 0.068$ & $0.412 \pm 0.033$ \\ \hline 
+        Finetune DS ortho on ortho base      & $0.612 \pm 0.015$ & $0.563 \pm 0.076$ & $0.420 \pm 0.013$ \\ \hline 
+        Finetune DS ortho on ortho finetuned & $0.615 \pm 0.024$ & $0.546 \pm 0.076$ & $\mathbf{0.444} \pm 0.025$ \\ \hline 
+    \end{tabular}
     \caption{Tree detection results using multiple experimental strategies. The approaches are evaluated on precision and recall at an IoU threshold of 0.4 and the average IoU for all predictions.}
     \label{tab:results:tree_det}
 \end{table}
@@ -74,27 +131,22 @@ In Table \ref{tab:results:tree_det} we show the quantitative evaluation of the d
 These experiments present several key takeaways. As expected, drone data provides the best prediction results and is significantly better than remote sensing data. Fine-tuning the model on local data helped marginally in the case of drone data but more significantly in the case of NAIP data. This is understandable because the DeepForest model was pretrained on drone data from representative environments but not NAIP data. Finally, a model for NAIP data trained on drone predictions was better than a pre-trained model but worse than a model trained solely on a small set of annotations. This suggests that the errors in the drone predictions propagate into even larger errors in the remote sensing predictions. Overall, these approaches show that predictions from drone data are likely to be useful in a variety of ecological applications, but NAIP cannot be used for accurate tree detection using the current methods. However, it's possible that even these low-quality predictions could be used for some tasks such as estimating the number of trees or registering datasets by using trees as landmarks.
 
 \begin{figure}[H]
-    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/base_image.png}}
+    \subfloat[Pretrained ortho]{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/deepforest_vis/ortho_base_preds.png}}
     \hfill
-    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/naip_image.png}}
+    \subfloat[Finetuned ortho]{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/deepforest_vis/ortho_finetuned_preds.png}}
     \vfill
-    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/drone_base.png}}
+    \subfloat[Pretrained downsampled ortho]{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/deepforest_vis/simulated_RS/RS_base_preds.png}
+    }
     \hfill
-    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/naip_base.png}}
+    \subfloat[Finetuned downsampled ortho]{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/deepforest_vis/simulated_RS/RS_finetuned_preds.png}}
     \vfill
-    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/drone_retrained.png}}
+    \subfloat[Pretrained NAIP]{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/deepforest_vis/RS_base_preds.png}}
     \hfill
-    \subfloat{\includegraphics[width=0.40\textwidth]{figs/results/tree_detections/QGIS_VIS/naip_retrained.png}}
-    \caption{Tree detections on a drone versus aerial data with and without fine-tuning on local data. Results for orthomosaics are on the left and NAIP is on the right. The first row is the input data, the second is the predictions from the base model, and the final is the predictions from the fine-tuned model. All predictions are visualized over drone data for clarity.
+    \subfloat[Finetuned NAIP]{\includegraphics[width=0.45\textwidth]{figs/results/tree_detections/deepforest_vis/RS_finetuned_preds.png}}
+    \caption{
+    Tree detections on the test set for drone orthomosaic, downsampled orthomosaic, and NAIP data. The left column is the pretrained model while the left is finetuned with site-specfic data. Predictions are in blue and groundtruth is in gold. Best viewed zoomed in.
     }
     \label{fig:results:tree_det}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics{figs/results/tree_detections/metrics.png}
-    \caption{Tree detection metrics for drone data versus resolution}
-    \label{fig:results:drone_resolution}
 \end{figure}
 
 
@@ -247,23 +299,23 @@ In these experiments, we use a simple prediction system to predict the class of 
 
 Before any missions have been executed, the agent can only observe the label of the pixel it is at. Then it plans a mission and executes it, observing the labels at the chosen sampling locations. These samples are used to train a prediction model which is used for evaluation and can be used to inform the plan for the next mission. 
 
-The experiments were conducted on ten random crops drawn from the region in question. Each of the approaches is run on all of the ten regions individually. Each crop is 4000x4000 pixels, representing a square with 2.4km sides. The agent starts and ends each mission in the center and the path length was set as 4000 pixels (2.4km). This meant that the agent could go to one side of the environment and return to the start within the budget but the corners were completely unreachable. Each domain was explored using four missions where 10 samples could be collected during each one. Each sample meant the agent could observe the class of a 31x31 pixel (18 meters) square region. After each mission, the class of all pixels is predicted using the KNN classifier, and the error metrics are computed.
+The experiments were conducted on 36 random crops drawn from the region in question. Each of the approaches is run on all of the 36 regions individually. Each crop was 6000x6000 pixels, representing a square with 3.6km sides. The agent starts and ends each mission in the center and the path length was set to 3000 pixels (1.8km). This meant that the agent could go halfway to one side of the environment and return to the start within the budget but a significant portion of the domain was unreachable. Each domain was explored using four missions where 10 samples could be collected during each one. Each sample meant the agent could observe the class of a 31x31 pixel (18 meters) square region. After each mission, the class of all pixels is predicted using the KNN classifier, and the error metrics are computed.
 
 The quality of the predictions is evaluated on two metrics: accuracy and averaged recall. The first is the fraction of pixels in the map that were assigned the correct class label by the prediction system. The second represents the average of the per-class recalls. This metric is chosen so that rare classes are treated equally in the evaluation procedure since this is critically important when we explicitly want to find rare classes. We also report the time taken to generate the plan. Note that this does not include the time taken to generate the class predictions, since the planner is agnostic to the choice of prediction algorithm.
 
 
 \begin{figure}
-    \subfloat{\includegraphics[width=0.5\textwidth]{figs/results/ipp/4000/accuracy.pdf}}
+    \subfloat{\includegraphics[width=0.5\textwidth]{figs/results/ipp/6000/accuracy.pdf}}
     \hfill
-    \subfloat{\includegraphics[width=0.5\textwidth]{figs/results/ipp/4000/class-averaged recall.pdf}}
+    \subfloat{\includegraphics[width=0.5\textwidth]{figs/results/ipp/6000/class-averaged recall.pdf}}
     \hfill
     \caption{Quantitative statistics computed after each flight and averaged across 10 missions. The shaded regions represent the first standard deviation. The left result shows the accuracy and the right shows the class-averaged recall. In both cases higher is better. The proposed methods are only slightly better in terms of error on early flights and the performance converges with the coverage baseline after all flights have been completed. However, the RAPTORS variant that prioritizes rare classes achieves better recall of rare classes after any number of flights. Note that the variance of all methods is high.}
     \label{fig:results:ipp_quant}
 \end{figure}
 
-The proposed planner is compared to a hand-designed coverage approach. The path consists of a triangular pattern that begins and ends at the central location. This triangle is sized appropriately to exhaust the available path budget. The goal of this path is to cover a diverse set of locations after the four mapping missions have been completed. This planner is visualized alongside the RAPTORS methods in Figure \ref{fig:results:ipp_pairqual}. As seen there, the RAPTORS methods prioritize collecting a diverse set of samples that span the magory types of land cover. The variant that priritizes rare classes can be seen to place more samples on the road that cuts across the center of the region.
+The proposed planner is compared to a hand-designed coverage approach. The path consists of a triangular pattern that begins and ends at the central location. This triangle is sized appropriately to exhaust the available path budget. The goal of this path is to cover a diverse set of locations after the four mapping missions have been completed. This planner is visualized alongside the RAPTORS methods in Figure \ref{fig:results:ipp_pairqual}. As seen there, the RAPTORS methods prioritize collecting a diverse set of samples that span the majority types of land cover. The variant that prioritizes rare classes can be seen to place more samples on the road that cuts across the center of the region.
 
-Quantitative evaluations results are presented Figure~\ref{fig:results:ipp_quant}. For all approaches, the performance improves as more samples are collected. The RAPTORS approaches have slightly better total accuracy than the coverage planner in initial flights, but the performance converges over time. This suggests that the quality of the predictions is saturating, especially for the well-represented classes. This is un-surprising because KNN is a simple prediction model. When these approaches are evaluated on class-averaged recall, which weights rare classes equallly, the RAPTORS\_rare method does better for any number of flights. This suggests that it is able to find a diverse set of initial samples and then leverage the predictions after each flight to prioritize sampling regions predicted to be rare classes. However, across all the experiments the scale of the variance is much higher than the difference between approaches. This variance partially captures the difference in difficulty between the different random sites that the approach was evaluated on. This highlights the challenge of evaluating informative path planning in a rigorous manner. The planning time for either RAPTORS variant was approximately 200 seconds per path. These experiments were executed on high-end cloud infastructure, but this shows that the approach has potential to be deployed in a realistic field scenario in the future.
+Quantitative evaluation results are presented Figure~\ref{fig:results:ipp_quant}. For all approaches, the performance improves as more samples are collected. The RAPTORS approaches have slightly better total accuracy than the coverage planner in initial flights, but the performance converges over time. This suggests that the quality of the predictions is saturating, especially for the well-represented classes. This is unsurprising because KNN is a simple prediction model. When these approaches are evaluated on class-averaged recall, which weights rare classes equally, the RAPTORS\_rare method does better for any number of flights. This suggests that it is able to find a diverse set of initial samples and then leverage the predictions after each flight to prioritize sampling regions predicted to be rare classes. However, across all the experiments the scale of the variance is much higher than the difference between approaches. This variance partially captures the difference in difficulty between the different random sites that the approach was evaluated on. This highlights the challenge of evaluating informative path planning in a rigorous manner. The planning time averaged across the RAPTORS variants was 252.2 seconds per path. These experiments were executed on high-end cloud infrastructure, but this shows that the approach has the potential to be deployed in a realistic field scenario in the future.
 
 %\begin{figure}
 %    \centering

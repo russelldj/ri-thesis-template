@@ -158,6 +158,8 @@ The first step in this experiment was processing the drone images into an orthom
 The overall goal of this work was to assess the performance of a deep learning method for tree detection. We chose to use DeepForest \cite{Weinstein2020DeepForest:Delineation} because it is widely used and trained on a comprehensive dataset.
 The authors state that spatial resolution and the size of the sliding window crop are especially important to the performance of DeepForest on new data. In preliminary experiments, we re-sampled the orthomosaic from the drone data to a variety of resolutions. We applied the pre-trained DeepForest model and qualitatively assessed the quality of the predictions at the different resolutions. We found that the best performance was at 0.1 meters per pixel, which was the same resolution the model was trained on. Therefore we re-sampled both datasets to this resolution. This resulted in down-sampling (coarsening) the drone data and up-sampling (interpolating) the aerial data. We used the default window size of 400 pixels, which was also the size used for training. An example of the training data can be seen in Figure \ref{fig:methods:tree_det_data}.
 
+DeepForest was trained using the default setting of the Adam \cite{} optimizer. The model was trained for 200 epochs on the manual annotations and scaled down by the number of annotations for the drone predictions, to train for X epochs. For the pretrained model, release X was used.
+
 
 \section{Semantic Mapping of Forests}
 \label{sec:methods:sem_mapping}
